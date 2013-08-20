@@ -8,7 +8,7 @@ Artibeus.name = 'Artibeus';
 Artibeus.data_dir = 'data/Artibeus_ventral_resized/';
 Artibeus.num_train_data = 5;
 Artibeus.num_parts = 15;
-Artibeus.num_mix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1];
+Artibeus.num_mix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1];
 Artibeus.parent = [0 1 2 3 4 5 6 7 1 9 10 11 12 13 14];
 Artibeus.part_name = {'Nasal',...
     'I1 upper','I2 upper','C upper','P4 upper','P5 upper','M1 upper','M2 upper',...
@@ -45,7 +45,7 @@ pos = pointtobox(pos,Artibeus.parent,0.8,1.3);
 neg = getNegativeData([Artibeus.data_dir,'neg/'],'png');
 
 % visualize training data
-show_data = 1;
+show_data = 0;
 if (show_data == 1)
     % show data
     for i=1:length(pos)
@@ -72,12 +72,7 @@ model.thresh = min(model.thresh,-2);
 % visualize predictions
 for ti = 1:length(testX)
     im = imread(testX(ti).im);
-    showboxes(im, boxes(ti,:), Artibeus.part_color);
+    showboxes(im, boxes{ti}(1,:), Artibeus.part_color);
     fprintf('press enter to continue...\n');
     pause;
 end
-
-% evaluation
-[apk,prec,rec,dist] = AVATOL_eval_apk(boxes,boxes,0.1,0);
-distMat = [dist{:}];
-figure(3); boxplot(distMat(1:size(boxes,2),:));
