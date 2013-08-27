@@ -70,6 +70,7 @@ model.thresh = min(model.thresh,-2);
 [boxes,pscores] = testmodel(Artibeus.name, model, testX, num2str(Artibeus.num_mix')');
 
 % visualize predictions
+figure(3);
 for ti = 1:length(testX)
     im = imread(testX(ti).im);
     showboxes(im, boxes{ti}(1,:), Artibeus.part_color);
