@@ -42,13 +42,13 @@ colorset = cell(1, num_sources);
 dir_txt = cell(1, num_sources);
 
 % 1) training source, 2) testing on warped images, 3) train transferred
-s = [0.8 1; % A
-    0.8 1;  % G
+s = [0.8 1.5; % A
+    0.8 1.3;  % G
     0.8 1;  % M1
-    0.8 1;  % M2
+    0.8 2.5;  % M2
     0.8 1.5;% N
     0.8 1;  % S
-    0.8 1;  % T
+    0.8 1.6;  % T
     ];
 for ai = 1:length(all_name)
     cls_name = all_name{ai};
