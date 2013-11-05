@@ -20,6 +20,8 @@ if ~isempty(boxes)
 	for p = 1:size(xy,2)
 		line([x1(:,p) x1(:,p) x2(:,p) x2(:,p) x1(:,p)]',[y1(:,p) y2(:,p) y2(:,p) y1(:,p) y1(:,p)]',...
 		'color',partcolor{p},'linewidth',2);
+        hold on
+        plot(x1(:,p)/2+x2(:,p)/2, y1(:,p)/2+y2(:,p)/2,'.','MarkerSize',15,'color',partcolor{p});
 	end
 end
 % JFrame = get(handle(gcf),'JavaFrame');

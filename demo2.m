@@ -3,7 +3,7 @@ addpath(genpath('.'))
 
 rt_path = 'data/vent_small/';
 nInstances = 20;
-class_name = {'A', 'G', 'M1', 'M2', 'N', 'S', 'T'};
+class_name = {'A', 'M2', 'N', 'S', 'T'};
 target = 'M1';
 sources = setdiff(class_name, target);
 
