@@ -7,7 +7,7 @@ globals;
 Artibeus.data_dir = 'data/Artibeus_ventral_resized/';
 Artibeus.num_train_data = 8;
 Artibeus.num_parts = 13;
-Artibeus.name = ['Artibeus', '_', Artibeus.num_parts, '_', Artibeus.num_train_data];
+Artibeus.name = ['Artibeus', '_', num2str(Artibeus.num_parts), '_', num2str(Artibeus.num_train_data)];
 Artibeus.num_mix = [1 1 1 1 1 1 1 1 1 1 1 1 1];
 Artibeus.parent = [0 1 2 3 4 5 6 1 8 9 10 11 12];
 Artibeus.part_name = {'Nasal',...

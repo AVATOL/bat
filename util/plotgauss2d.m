@@ -1,5 +1,5 @@
 
-function h=plotgauss2d(mu, Sigma)
+function h=plotgauss2d(mu, Sigma, color)
 % PLOTGAUSS2D Plot a 2D Gaussian as an ellipse with optional cross hairs
 % h=plotgauss2(mu, Sigma)
 %
@@ -7,7 +7,7 @@ function h=plotgauss2d(mu, Sigma)
 % This file is from matlabtools.googlecode.com
 
 
-h = plotcov2(mu, Sigma);
+h = plotcov2(mu, Sigma, color);
 return;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,12 +40,13 @@ end
 
 % Copyright (C) 2002 Mark A. Paskin
 
-function h = plotcov2(mu, Sigma, varargin)
+function h = plotcov2(mu, Sigma, color, varargin)
 
 if size(Sigma) ~= [2 2], error('Sigma must be a 2 by 2 matrix'); end
 if length(mu) ~= 2, error('mu must be a 2 by 1 vector'); end
 
-[p, n, plot_opts] = process_options(varargin, 'conf', 0.95, 'num-pts', 100, 'plot_opts', {'g-','linewidth',2});
+[p, n, plot_opts] = process_options(varargin, 'conf', 0.95, 'num-pts', 100, ...
+    'plot_opts', {'-', 'linewidth', 1, 'color', color});
 h = [];
 holding = ishold;
 if (Sigma == zeros(2, 2))

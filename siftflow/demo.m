@@ -1,8 +1,8 @@
 clear, close all
-% im1=imread('Mars-1.jpg');
-% im2=imread('Mars-2.jpg');
-im1=imread('A1.png');
-im2=imread('M1.png');
+im1=imread('Mars-1.jpg');
+im2=imread('Mars-2.jpg');
+% im1=imread('A1.png');
+% im2=imread('M1.png');
 
 % im1=imresize(imfilter(im1,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
 % im2=imresize(imfilter(im2,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
@@ -43,10 +43,9 @@ flow(:,:,1)=vx;
 flow(:,:,2)=vy;
 figure;imshow(flowToColor(flow));
 
-return;
 
 % this is the code doing the brute force matching
-tic
-[flow2,energylist2]=mexDiscreteFlow(Sift1,Sift2,[alpha,alpha*20,60,30]);
-toc
-figure;imshow(flowToColor(flow2));
+% tic
+% [flow2,energylist2]=mexDiscreteFlow(Sift1,Sift2,[alpha,alpha*20,60,30]);
+% toc
+% figure;imshow(flowToColor(flow2));

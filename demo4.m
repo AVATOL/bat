@@ -23,7 +23,7 @@ tgt_cls = 'M1';
 srcList = {'A', 'N', 'T'};
 srcNumParts = [13, 11, 13]; % N, I1, C, P4, P5, M1, M2, I1, C, P4, P5, M1, M2
 srcMasks = ones(13,3); % set absent part to 0
-srcMasks(5,2) = 0; srcMasks(11,2) = 0; % N has no P5
+srcMasks(4,2) = 0; srcMasks(10,2) = 0; % N has no P4
 srcMasks = logical(srcMasks);
 nparts = 13; %max(srcNumParts);
 nsamples = 60;
@@ -44,7 +44,8 @@ end
 transAnno = cell(length(tgtList),1);
     
 % for-loop target images
-for j = 1:length(tgtList)
+%for j = 1:length(tgtList)
+for j = 1:1
     if isempty(tgtList{j})
         continue
     end
@@ -58,15 +59,17 @@ for j = 1:length(tgtList)
     transAnno{j} = zeros(nparts,2,nsamples);
     ss = 1;
     
-	%for i = 1:length(srcList)
-    for i = 2:2
+    for i = 1:length(srcList)
+    %for i = 3:3
 	    src_path = [fd_path srcList{i} '/'];
 	    fileList = get_file_list(src_path);
 	    numparts = srcNumParts(i);
         srcColors = part_color(srcMasks(:,i));
+        
+        ss_start = ss;
     
     	% for-loop src images
-    	for k = 1:length(fileList)
+        for k = 1:length(fileList)
     	    if isempty(fileList{k})
     	        continue
     	    end
@@ -74,9 +77,9 @@ for j = 1:length(tgtList)
     	    siftSrc = mexDenseSIFT(imSrc,cellsize,gridspacing);
     	    
     	    tic;[vx,vy,energylist]=SIFTflowc2f(siftSrc,siftTgt,SIFTflowpara);toc
-            warpedSrc = warpImage(imSrc,vx,vy);
-            figure(100);
-            imshow(warpedSrc);
+            %warpedSrc = warpImage(imSrc,vx,vy);
+            %figure(100);
+            %imshow(warpedSrc);
     	    %save([srcList{i}, '_', tgt_cls, num2str(k), '_', num2str(j), '.mat'], 'vx', 'vy');
     	    
     	    % annotation transfer
@@ -105,21 +108,24 @@ for j = 1:length(tgtList)
     	    for bi = 1:numparts
     	        plot(vpoint(bi,1),vpoint(bi,2),'.','MarkerSize',15,'color',srcColors{bi});
     	    end
-    	end
-    end
-    
-    % normal fitting
-    norm_mu = zeros(nparts,2);
-    norm_sigma = zeros(nparts,2);
-    for bi = 1:nparts
-        data = squeeze(transAnno{j}(bi,:,:))';
-        if max(data(1,:)) == 0
-            continue
         end
-        data = data(sum(data,2) ~= 0,:);
-        [norm_mu(bi,:),norm_sigma(bi,:)] = normfit(data);
-        figure(2);
-        hold on
-        plotgauss2d(norm_mu(bi,:)', diag(norm_sigma(bi,:)));
-    end
-end
+        
+        ss_end = ss - 1;
+        
+        % normal fitting
+        norm_mu = zeros(nparts,2);
+        norm_sigma = zeros(nparts,2);
+        for bi = 1:nparts
+            data = squeeze(transAnno{j}(bi,:,ss_start:ss_end))';
+            if max(data(1,:)) == 0
+                continue
+            end
+            data = data(sum(data,2) ~= 0,:);
+            [norm_mu(bi,:),norm_sigma(bi,:)] = normfit(data);
+            figure(2);
+            hold on
+            plotgauss2d(norm_mu(bi,:)', diag(norm_sigma(bi,:)), part_color{bi});
+        end
+    end % srcList
+    
+end % tgtList
