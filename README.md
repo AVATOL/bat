@@ -12,8 +12,13 @@ How to use the code
 -------------------
 The system basically includes 2 main conponents: training and testing. Please follow the steps below to learn the models for each species. NOTE that current code is mainly used for localization, so the size of parts are the same in the model. 
 
- - Run compile.m to compile the required mex files. NOTE that mex has to be set up first.
+ - Open Matlab and setup Mex if neccessary (type "mex -setup" and follow the instructions).
+ - Run compile.m (type "compile" in Matlab) to compile the required mex files. 
+ - Run demo3.m to see how to annotate, train and test with the part based model. The data of species Artibeus is supplied.
+
+ OR
+
  - Annotate your training data. A simple utility util/annotateParts.m is provided. User need to click on the center of each tooth. 
- - Run demo.m (for Artibeus) to see how to train and test with the part based model. The data of species Artibeus is supplied.
+ - Run demo.m (for Artibeus).
 
 

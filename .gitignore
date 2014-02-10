@@ -32,3 +32,5 @@ configure.log
 \#*\#
 
 *.orig
+*.mat
+*.png

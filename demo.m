@@ -4,15 +4,15 @@ globals;
 
 %% configuration
 % data parameters
-Artibeus.name = 'Artibeus';
 Artibeus.data_dir = 'data/Artibeus_ventral_resized/';
-Artibeus.num_train_data = 5;
-Artibeus.num_parts = 15;
-Artibeus.num_mix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1];
-Artibeus.parent = [0 1 2 3 4 5 6 7 1 9 10 11 12 13 14];
+Artibeus.num_train_data = 8;
+Artibeus.num_parts = 13;
+Artibeus.name = ['Artibeus', '_', num2str(Artibeus.num_parts), '_', num2str(Artibeus.num_train_data)];
+Artibeus.num_mix = [1 1 1 1 1 1 1 1 1 1 1 1 1];
+Artibeus.parent = [0 1 2 3 4 5 6 1 8 9 10 11 12];
 Artibeus.part_name = {'Nasal',...
-    'I1 upper','I2 upper','C upper','P4 upper','P5 upper','M1 upper','M2 upper',...
-    'I1 lower','I2 lower','C lower','P4 lower','P5 lower','M1 lower','M2 lower'};
+    'I1 upper','C upper','P4 upper','P5 upper','M1 upper','M2 upper',...
+    'I1 lower','C lower','P4 lower','P5 lower','M1 lower','M2 lower'};
 Artibeus.part_color = cell(1,Artibeus.num_parts);
 colorset = hsv((Artibeus.num_parts-1) / 2 + 1);
 colorset = [colorset; colorset(2:end,:)];

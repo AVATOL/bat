@@ -42,13 +42,13 @@ colorset = cell(1, num_sources);
 dir_txt = cell(1, num_sources);
 
 % 1) training source, 2) testing on warped images, 3) train transferred
-s = [0.8 1; % A
-    0.8 1;  % G
-    0.8 1;  % M1
-    0.8 1;  % M2
+s = [0.8 1.5; % A
+    0.8 1.3;  % G
+    0.8 1.5;  % M1
+    0.8 2.5;  % M2
     0.8 1.5;% N
     0.8 1;  % S
-    0.8 1;  % T
+    0.8 1.6;  % T
     ];
 for ai = 1:length(all_name)
     cls_name = all_name{ai};
@@ -85,16 +85,16 @@ for ai = 1:length(all_name)
         s2 = s(ai,2);
         dir_cls = [rt_path cls_name '/'];
         % 1)
-        train_model_from_prior(dir_cls, K_t, pa_t, cls_name, colorset_t, ...
-            [dir_cls '/pos/'], s1, s2, show_data, demo_active, save_model);
+%         train_model_from_prior(dir_cls, K_t, pa_t, cls_name, colorset_t, ...
+%             [dir_cls '/pos/'], s1, s2, show_data, demo_active, save_model);
         
         % 2)
-        load([cls_name '_eval.mat'])
-        test_on_warped(allModels{1}, dir_txt_t, tdir, num_parts, colorset_t, 1);
+%         load([cls_name '_eval.mat'])
+%         test_on_warped(allModels{1}, dir_txt_t, tdir, num_parts, colorset_t, 1);
         
         % 3)
-        train_model_from_prior(tdir, K_t, pa_t, name_t, colorset_t, dir_txt_t, ...
-            s1, s2, show_data, demo_active, save_model);
+%         train_model_from_prior(tdir, K_t, pa_t, name_t, colorset_t, dir_txt_t, ...
+%             s1, s2, show_data, demo_active, save_model);
 
         % record params
         K{loc} = K_t;
@@ -216,8 +216,11 @@ for si = 1:8
     end
     l_name = [target '_struct_' num2str(si)];
     
+    % because now same species, s1 s2 are same for all struct
+    s1 = 0.8;
+    s2 = 1.5;
     model_scores(si) = train_model_from_prior(tdir, l_K, l_pa, l_name, l_colorset, l_points, ...
-        0.8, 1);
+        s1, s2, show_data, demo_active, save_model);
     
     close all;
     
