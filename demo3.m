@@ -40,7 +40,7 @@ pos = pointtobox(pos,Species.parent,Species.bb_const1,Species.bb_const2);
 neg = getNegativeData([Species.rt_dir,'neg/'],'png');
 
 % visualize training data
-show_data = 1;
+show_data = 0;
 if (show_data == 1)
     % show data
     for i=1:length(pos)

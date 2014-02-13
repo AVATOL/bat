@@ -6,6 +6,7 @@ file = [cachedir name '.log'];
 delete(file);
 diary(file);
 
+%% initialization
 cls = [name '_cluster_' num2str(K')'];
 try
   load([cachedir cls]);
@@ -16,6 +17,7 @@ catch
   save([cachedir cls],'def','idx');
 end
 
+%% train part filters independently
 for p = 1:length(pa)
   cls = [name '_part_' num2str(p) '_mix_' num2str(K(p))];
   try
@@ -39,6 +41,7 @@ for p = 1:length(pa)
   end
 end
 
+%% build tree structure, determine anchor positions
 cls = [name '_final1_' num2str(K')'];
 try
   load([cachedir cls]);
@@ -53,6 +56,7 @@ catch
   save([cachedir cls],'model');
 end
 
+%% final round
 cls = [name '_final_' num2str(K')'];
 try
   load([cachedir cls]);

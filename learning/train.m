@@ -29,7 +29,7 @@ if nargin < 9
   % maxsize*1e9/(4*model.len)  = # of examples we can store, encoded as 4-byte floats
   no_sv = (wpos+1) * length(pos);
   maxsize = 10 * no_sv * 4 * sparselen(model) / 1e9;
-  maxsize = min(max(maxsize,6),4.5);
+  maxsize = min(max(maxsize,6),1.5);
   % the current version of octave does really bad memory reallocations
   % when slicing, so we can't use too much memory otherwise it starts paging
   if isoctave() maxsize = 1.8; end
