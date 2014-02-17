@@ -33,7 +33,7 @@ write = false;
 if nargin > 5
   global qp;
   write  = true;
-	levels = levels(randperm(length(levels)));
+  levels = levels(randperm(length(levels)));
 end
 if nargin < 6
   id = 0;
@@ -61,13 +61,13 @@ for rlevel = levels
     if latent
       skipflag = 0;
       for k = 1:numparts
-				% because all mixtures for one part is the same size, we only need to do this once
-				ovmask = testoverlap(parts(k).sizx(1),parts(k).sizy(1),pyra,rlevel,bbox.xy(k,:),overlap);
-				if ~any(ovmask)
-					skipflag = 1;
-					break;
-				end
-			end
+        % because all mixtures for one part is the same size, we only need to do this once
+		ovmask = testoverlap(parts(k).sizx(1),parts(k).sizy(1),pyra,rlevel,bbox.xy(k,:),overlap);
+		if ~any(ovmask)
+		  skipflag = 1;
+		  break;
+		end
+	  end
       if skipflag == 1
         continue;
       end
@@ -87,16 +87,16 @@ for rlevel = levels
 	  
       if latent
 	    for fi = 1:length(f)
-	    	if isfield(bbox,'m')
-	    		if fi ~= bbox.m(k)
-	    			parts(k).score(:,:,fi) = -INF;
-	    		end
-	    	else
-	    		ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox.xy(k,:),overlap);
-	    		tmpscore = parts(k).score(:,:,fi);
-	    		tmpscore(~ovmask) = -INF;
-	    		parts(k).score(:,:,fi) = tmpscore;
-	    	end
+	      if isfield(bbox,'m')
+	      	if fi ~= bbox.m(k)
+	      		parts(k).score(:,:,fi) = -INF;
+	      	end
+	      else
+	      	ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox.xy(k,:),overlap);
+	      	tmpscore = parts(k).score(:,:,fi);
+	      	tmpscore(~ovmask) = -INF;
+	      	parts(k).score(:,:,fi) = tmpscore;
+	      end
 	    end
 	  end
     end
@@ -110,7 +110,7 @@ for rlevel = levels
 
     % Add bias to root score
     parts(1).score = parts(1).score + parts(1).b;
-		[rscore Im] = max(parts(1).score,[],3);
+	[rscore Im] = max(parts(1).score,[],3);
     
     % Zero-out invalid regions in latent mode
     if latent
@@ -121,15 +121,15 @@ for rlevel = levels
     % Walk back down tree following pointers
     % (DEBUG) Assert extracted feature re-produces score
     for i = 1:length(X)
-			cnt = cnt + 1;
+	  cnt = cnt + 1;
       x = X(i);
       y = Y(i);
       m = Im(y,x);
       %[boxes(cnt).xy,boxes(cnt).m,boxes(cnt).v,ex] = backtrack(x,y,m,parts,pyra,ex,write);
-			%boxes(cnt).c = c;
-			%boxes(cnt).s = rscore(y,x);
+	  %boxes(cnt).c = c;
+	  %boxes(cnt).s = rscore(y,x);
       [box,ex] = backtrack(x,y,m,parts,pyra,ex,write);
-			boxes(cnt,:) = [box c rscore(y,x)];
+	  boxes(cnt,:) = [box c rscore(y,x)];
       if write && ~latent
         qp_write(ex);
         qp.ub = qp.ub + qp.Cneg*max(1+rscore(y,x),0);
@@ -145,8 +145,8 @@ for rlevel = levels
     end
       
     % Optimize qp with coordinate descent, and update model
-     if write && ~latent && ...
-            (qp.lb < 0 || 1 - qp.lb/qp.ub > .05 || qp.n == length(qp.sv))
+    if write && ~latent && ...
+		(qp.lb < 0 || 1 - qp.lb/qp.ub > .05 || qp.n == length(qp.sv))
       model = optimize(model);
       [components,filters,resp] = modelcomponents(model,pyra);    
     end
@@ -158,7 +158,7 @@ boxes = boxes(1:cnt,:);
 
 if latent && ~isempty(boxes)
   %boxes = boxes(end);
-	boxes = boxes(end,:);
+  boxes = boxes(end,:);
   if write
     qp_write(ex);
   end
@@ -175,7 +175,7 @@ function [components,filters,resp] = modelcomponents(model,pyra)
 components = cell(length(model.components),1);
 for c = 1:length(model.components)
 	for k = 1:length(model.components{c})
-		p = model.components{c}(k);
+		p = model.components{c}(k); % part k at component c
 		[p.sizy,p.sizx,p.w,p.biasI,p.filterI,p.defI,p.starty,p.startx,p.step,p.level,p.Ix,p.Iy] = deal([]);
 		[p.scale,p.level,p.Ix,p.Iy] = deal(0);
 

@@ -57,19 +57,19 @@ for oct = 1:max_octave
         scal = 2^(-(i+1)/interval);
         res_im = resize(im,scal);
 
-		[h,w] = size(res_im);
+        [h,w] = size(res_im);
         h = max(floor(h/sbin)-2,0);
         w = max(floor(w/sbin)-2,0);
-		if (h < limit || w < limit)
+        if (h < limit || w < limit)
             fprintf('[***DEBUG***] flag is set!! w = %d, h = %d\n', w,h);
-			flag = 1;
+            flag = 1;
             trunc = (oct-1)*interval + i;
-			break;
-		end
+            break;
+        end
     end
-	if (flag)
-		break;
-	end
+    if (flag)
+      break;
+    end
     im = res_im;
 end
 

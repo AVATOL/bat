@@ -4,6 +4,7 @@ addpath detection;
 addpath visualization;
 addpath evaluation;
 addpath util;
+addpath(genpath('ssvm'));
 if isoctave()
   addpath oct;
 else

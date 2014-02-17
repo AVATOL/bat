@@ -1,4 +1,4 @@
-function model = trainmodel(name,pos,neg,K,pa,sbin)
+function model = trainmodel_ssvm(name,pos,K,pa,sbin)
 
 globals;
 
@@ -13,18 +13,18 @@ try
 catch
   model = initmodel(pos,sbin);
   def = data_def(pos,model);
-  idx = clusterparts(def,K,pa);
+  idx = clusterparts(def,K,pa); % each part in each example has a cluster label
   save([cachedir cls],'def','idx');
 end
 
 %% train part filters independently
 for p = 1:length(pa)
   cls = [name '_part_' num2str(p) '_mix_' num2str(K(p))];
-  try
-    load([cachedir cls]);
-  catch
-    sneg = neg(1:min(length(neg),100));
-    model = initmodel(pos,sbin);
+%   try
+%     load([cachedir cls]);
+%   catch
+    %sneg = neg(1:min(length(neg),100));
+    sneg = [];
     models = cell(1,K(p));
     for k = 1:K(p)
       spos = pos(idx{p} == k);
@@ -34,12 +34,15 @@ for p = 1:length(pa)
         spos(n).x2 = spos(n).x2(p);
         spos(n).y2 = spos(n).y2(p);
       end
-      models{k} = train(cls,model,spos,sneg,1,1);
+      model = initmodel(spos,sbin);
+      [models{k},progress] = train_inner(cls,model,spos,sneg,1);
     end
-    model = mergemodels(models); % merge mixtures
-    save([cachedir cls],'model');
-  end
+    %model = mergemodels(models); % merge mixtures
+    %save([cachedir cls],'model');
+%   end
 end
+
+return
 
 %% build tree structure, determine anchor positions
 cls = [name '_final1_' num2str(K')'];
