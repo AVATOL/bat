@@ -128,6 +128,7 @@ for rlevel = levels
       par = parts(k).parent;
       [msg,parts(k).Ix,parts(k).Iy,parts(k).Im] = passmsg(parts(k),parts(par));
       parts(par).score = parts(par).score + msg;
+	  fprintf('>>> detect_oracle.msgpass.k %d\n',k);
     end
     
     % Add bias to root score

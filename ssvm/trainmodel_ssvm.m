@@ -20,9 +20,9 @@ end
 %% train part filters independently
 for p = 1:length(pa)
   cls = [name '_part_' num2str(p) '_mix_' num2str(K(p))];
-%   try
-%     load([cachedir cls]);
-%   catch
+  try
+    load([cachedir cls]);
+  catch
     %sneg = neg(1:min(length(neg),100));
     sneg = [];
     models = cell(1,K(p));
@@ -35,14 +35,21 @@ for p = 1:length(pa)
         spos(n).y2 = spos(n).y2(p);
       end
       model = initmodel(spos,sbin);
-      [models{k},progress] = train_inner(cls,model,spos,sneg,1);
+      [models{k},progress] = train_inner(cls,model,spos,sneg,1,0);
     end
-    %model = mergemodels(models); % merge mixtures
-    %save([cachedir cls],'model');
-%   end
+    % DEBUG code
+    %visualizemodel(models{1})
+    %norm(models{1}.w,2)
+    %im = imread(pos(8).im);
+    %[boxes] = detect_fast(im, models{1}, 0);
+    %boxes = nms(boxes,0.3);
+    %showboxes(im,boxes(1,:),{'g'})
+    %pause;
+    
+    model = mergemodels(models); % merge mixtures
+    save([cachedir cls],'model');
+  end
 end
-
-return
 
 %% build tree structure, determine anchor positions
 cls = [name '_final1_' num2str(K')'];
@@ -50,12 +57,13 @@ try
   load([cachedir cls]);
 catch
   model = buildmodel(name,model,def,idx,K,pa); % combine parts
+  model.w = model2vec(model);
   for p = 1:length(pa)
 		for n = 1:length(pos)
 			pos(n).mix(p) = idx{p}(n);
 		end
 	end
-  model = train(cls,model,pos,neg,0,1);
+  model = train_inner(cls,model,pos,[],0,100);
   save([cachedir cls],'model');
 end
 

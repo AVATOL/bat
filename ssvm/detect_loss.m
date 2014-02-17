@@ -9,7 +9,8 @@ numparts = length(param.parts);
 overlap = param.overlap;
 
 xy = reshape(ypred.bbox(1:end-2),[4,numparts]);
-xygt = reshape(ytruth.bbox(1:end-2),[4,numparts]);
+%xygt = reshape(ytruth.bbox(1:end-2),[4,numparts]);
+xygt = ytruth.bbox';
 
 loss = 0;
 for k = 1:numparts

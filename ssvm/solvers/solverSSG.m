@@ -1,4 +1,4 @@
-function [model, progress] = solverSSG(model, param, options)
+function [model, progress] = solverSSG(model, param, options, kk)
 % [model, progress] = solverSSG(param, options)
 %
 % Solves the structured support vector machine (SVM) using stochastic 
@@ -151,10 +151,12 @@ progress = [];
 
 % === Initialization ===
 % set w to zero vector
-if using_sparse_features
-    model.w = sparse(d,1);
-else
-    model.w = zeros(d,1);
+if ~isfield(model, 'w')
+  if using_sparse_features
+      model.w = sparse(d,1);
+  else
+      model.w = zeros(d,1);
+  end
 end
 
 if (options.do_weighted_averaging)
@@ -184,7 +186,8 @@ tic();
 
 
 % === Main loop ====
-k=0; % same k as in paper
+%k=0; % same k as in paper
+k = kk;
 for p=1:options.num_passes
 
     perm = [];
@@ -202,6 +205,7 @@ for p=1:options.num_passes
     
         % 2) solve the loss-augmented inference for point i
         ystar_i = maxOracle(param, model, patterns{i}, labels{i});
+		fprintf('*** iter %d, id %d\n', p, n);
                 
         % 3) get the subgradient
         % ***

@@ -40,13 +40,14 @@ end
 
 % compute feature from scratch
 %mix = y.bbox(end-1);
-xy = reshape(y.bbox(1:end-2),[4,numparts]);
+%xy = reshape(y.bbox(1:end-2),[4,numparts]);
+xy = y.bbox';
 
-if ~isfiled(y, 'level')
+if ~isfield(y, 'level')
   y.level = ones(numparts, 1);
 end
 
-if ~isfiled(y, 'mix')
+if ~isfield(y, 'mix')
   y.mix = ones(numparts, 1);
 end
 
@@ -54,7 +55,7 @@ end
 pt = 1;
 p = parts(1);
 mix = y.mix(1);
-scale = pyra.scale(y.level(1));
+scale = x.pyra.scale(y.level(1));
 px = round((xy(1,1)-1) / scale + x.pyra.padx + 1); % TODO: use testoverlap() better?
 py = round((xy(2,1)-1) / scale + x.pyra.pady + 1);
 
@@ -71,10 +72,10 @@ for k = 2:numparts
   p = parts(k);
   mix = y.mix(k);
   par = p.parent;
-  scale = pyra.scale(y.level(par)); % TODO: check par and k in different layers
+  scale = x.pyra.scale(y.level(par)); % TODO: check par and k in different layers
   ppx = round((xy(1,par)-1) / scale + x.pyra.padx + 1);
   ppy = round((xy(2,par)-1) / scale + x.pyra.pady + 1);
-  scale = pyra.scale(y.level(k));
+  scale = x.pyra.scale(y.level(k));
   px = round((xy(1,k)-1) / scale + x.pyra.padx + 1);
   py = round((xy(2,k)-1) / scale + x.pyra.pady + 1);
   % bias

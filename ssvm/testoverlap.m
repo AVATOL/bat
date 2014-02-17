@@ -36,3 +36,6 @@ box = (by2-by1+1)*(bx2-bx1+1);
 
 % thresholded overlap
 ov = inter ./ (area + box - inter) > overlap;
+
+% output location
+% [yy,xx] = find(ov == 1);

@@ -1,4 +1,4 @@
-function [model, progress] = train_inner(name, model, pos, neg, warp, ...
+function [model, progress] = train_inner(name, model, pos, neg, warp, kk,...
                 iter, lambda, duality_gap, do_line_search, overlap, debug) 
 % Train a structured SVM for DPM
 % model = initialed model, NOTE: for indivi part, model is init by spos
@@ -12,7 +12,7 @@ function [model, progress] = train_inner(name, model, pos, neg, warp, ...
 
 globals;
 
-if nargin < 10
+if nargin < 12
   lambda = 1;
   duality_gap = 0.1;
   iter = 100;
@@ -50,11 +50,13 @@ for i = 1:length(pos)
   
   im = imread(pos(i).im);
   bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
-  [im, bbox] = cropposwarp(im, bbox); % NOTE: for speeding up training, may hert performance
+  if warp
+    [im, bbox] = cropposwarp(im, bbox); % NOTE: for speeding up training, may hurt performance
+  end
   
   pyra = featpyramid(im, model); 
   patterns{i}.pyra = pyra;
-  bbox = [reshape(bbox,1,4*length(pos(i).x1)) 1 0];
+  %bbox = [reshape(bbox',1,4*length(pos(i).x1)) 1 0];
   labels{i}.bbox = bbox;
 end
 
@@ -76,7 +78,7 @@ param.overlap1   = overlap / 2;
 param.thresh    = 0;
 param.latent    = ~warp;
 
-[model, progress] = solverSSG(model, param, options);
+[model, progress] = solverSSG(model, param, options, kk);
 model = vec2model(model.w, model);
 
 % TODO: set model.thresh by w^T x
