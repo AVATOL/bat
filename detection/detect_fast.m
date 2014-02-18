@@ -139,6 +139,12 @@ function [score,Ix,Iy,Ik] = passmsg(child,parent)
   [Ix0,Iy0,score0] = deal(zeros([Ny Nx K]));
 
   for k = 1:K
+    if child.w(1,k) == 0
+      child.w(1,k) = child.w(1,k) + 1e-5;
+    end
+    if child.w(3,k) == 0
+      child.w(3,k) = child.w(3,k) + 1e-5;
+    end
     [score0(:,:,k),Ix0(:,:,k),Iy0(:,:,k)] = shiftdt(child.score(:,:,k), child.w(1,k), child.w(2,k), child.w(3,k), child.w(4,k),child.startx(k),child.starty(k),Nx,Ny,child.step);
   end
 

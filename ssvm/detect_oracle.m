@@ -125,10 +125,13 @@ for rlevel = levels
     
     % Walk from leaves to root of tree, passing message to parent
     for k = numparts:-1:2
+      if (param.fix_def)
+        parts(k).w = repmat([0.01 0 0.01 0]', 1, length(parts(k).defid));
+      end
       par = parts(k).parent;
       [msg,parts(k).Ix,parts(k).Iy,parts(k).Im] = passmsg(parts(k),parts(par));
       parts(par).score = parts(par).score + msg;
-	  fprintf('>>> detect_oracle.msgpass.k %d\n',k);
+      %fprintf('>>> detect_oracle.msgpass.k %d\n',k);
     end
     
     % Add bias to root score
@@ -188,6 +191,12 @@ Iy0 = zeros([Ny Nx K]);
 [Ix0,Iy0,score0] = deal(zeros([Ny Nx K]));
 
 for k = 1:K
+  if child.w(1,k) == 0
+    child.w(1,k) = child.w(1,k) + 1e-5;
+  end
+  if child.w(3,k) == 0
+    child.w(3,k) = child.w(3,k) + 1e-5;
+  end
 	[score0(:,:,k),Ix0(:,:,k),Iy0(:,:,k)] = shiftdt(child.score(:,:,k), child.w(1,k), child.w(2,k), child.w(3,k), child.w(4,k),child.startx(k),child.starty(k),Nx,Ny,child.step);
 end
 

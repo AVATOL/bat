@@ -164,8 +164,10 @@ if (options.do_weighted_averaging)
 end
 
 % logging
+%k=0; % same k as in paper
+k = kk;
 if (options.debug_multiplier == 0)
-    debug_iter = n;
+    debug_iter = n + k;
     options.debug_multiplier = 100;
 else
     debug_iter = 1;
@@ -186,8 +188,6 @@ tic();
 
 
 % === Main loop ====
-%k=0; % same k as in paper
-k = kk;
 for p=1:options.num_passes
 
     perm = [];
@@ -205,7 +205,7 @@ for p=1:options.num_passes
     
         % 2) solve the loss-augmented inference for point i
         ystar_i = maxOracle(param, model, patterns{i}, labels{i});
-		fprintf('*** iter %d, id %d\n', p, n);
+        %fprintf('*** iter %d, id %d\n', p, n);
                 
         % 3) get the subgradient
         % ***

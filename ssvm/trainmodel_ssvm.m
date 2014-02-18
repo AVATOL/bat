@@ -1,4 +1,10 @@
-function model = trainmodel_ssvm(name,pos,K,pa,sbin)
+function model = trainmodel_ssvm(name,pos,K,pa,sbin,kk,kkk,fix_def)
+
+if nargin < 6
+  kk = 100;
+  kkk = 100;
+  fix_def = 0;
+end
 
 globals;
 
@@ -52,7 +58,7 @@ for p = 1:length(pa)
 end
 
 %% build tree structure, determine anchor positions
-cls = [name '_final1_' num2str(K')'];
+cls = [name '_final1_' num2str(K')' '_' num2str(kk) '_' num2str(kkk) '_' num2str(fix_def)];
 try
   load([cachedir cls]);
 catch
@@ -63,18 +69,25 @@ catch
 			pos(n).mix(p) = idx{p}(n);
 		end
 	end
-  model = train_inner(cls,model,pos,[],0,100);
+  model = train_inner(cls,model,pos,[],0,kk,fix_def);
   save([cachedir cls],'model');
+  % DEBUG code
+%   visualizemodel(model)
+%   visualizeskeleton(model)
+%   im = imread(pos(8).im);
+%   [boxes] = detect_fast(im, model, 0);
+%   boxes = nms(boxes,0.3);
+%   showboxes(im,boxes(1,:),{'g','g','g','g','g','g','g','g','g','g','g','g','g'})
 end
 
 %% final round
-cls = [name '_final_' num2str(K')'];
+cls = [name '_final_' num2str(K')' '_' num2str(kk) '_' num2str(kkk) '_' num2str(fix_def)];
 try
   load([cachedir cls]);
 catch
   if isfield(pos,'mix')
     pos = rmfield(pos,'mix');
   end
-  model = train(cls,model,pos,neg,0,1);
+  model = train_inner(cls,model,pos,[],0,kkk,fix_def);
   save([cachedir cls],'model');
 end

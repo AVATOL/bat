@@ -53,4 +53,24 @@ if (show_data == 1)
 end
 
 %% training with SSVM
+%model = trainmodel_ssvm(Species.name, pos, Species.num_mix, Species.parent, sbin, 100, 100, 1);
 model = trainmodel_ssvm(Species.name, pos, Species.num_mix, Species.parent, sbin);
+save([Species.name '.mat'], 'Species', 'model');
+
+% visualize model
+figure(1); visualizemodel(model);
+figure(2); visualizeskeleton(model);
+
+%% testing
+model.thresh = 0;
+model.thresh = min(model.thresh,-5);
+[boxes,pscores] = testmodel(Species.name, model, testX, num2str(Species.num_mix')');
+
+% visualize predictions
+figure(3);
+for ti = 1:length(testX)
+    im = imread(testX(ti).im);
+    showboxes(im, boxes{ti}(1,:), Species.part_color);
+    fprintf('press enter to continue...\n');
+    pause;
+end

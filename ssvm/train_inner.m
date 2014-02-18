@@ -1,4 +1,4 @@
-function [model, progress] = train_inner(name, model, pos, neg, warp, kk,...
+function [model, progress] = train_inner(name, model, pos, neg, warp, kk, fix_def,...
                 iter, lambda, duality_gap, do_line_search, overlap, debug) 
 % Train a structured SVM for DPM
 % model = initialed model, NOTE: for indivi part, model is init by spos
@@ -12,7 +12,7 @@ function [model, progress] = train_inner(name, model, pos, neg, warp, kk,...
 
 globals;
 
-if nargin < 12
+if nargin < 13
   lambda = 1;
   duality_gap = 0.1;
   iter = 100;
@@ -77,6 +77,7 @@ param.overlap   = overlap;
 param.overlap1   = overlap / 2;
 param.thresh    = 0;
 param.latent    = ~warp;
+param.fix_def   = fix_def;
 
 [model, progress] = solverSSG(model, param, options, kk);
 model = vec2model(model.w, model);
