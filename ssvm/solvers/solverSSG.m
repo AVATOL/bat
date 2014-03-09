@@ -180,7 +180,7 @@ if (isstruct(options.test_data) && isfield(options.test_data, 'patterns'))
 end
 
 fprintf('running SSG on %d examples. The options are as follows:\n', length(patterns));
-options
+%options
 
 rand('state',options.rand_seed);
 randn('state',options.rand_seed);
@@ -189,6 +189,7 @@ tic();
 
 % === Main loop ====
 for p=1:options.num_passes
+	fprintf('>');
 
     perm = [];
     if (isequal(options.sample, 'perm'))
@@ -212,7 +213,7 @@ for p=1:options.num_passes
         % [the non-standard notation below is by analogy to the BCFW
         % algorithm -- but you can convince yourself that we are just doing
         % the standard subgradient update:
-        %    w_(k+1) = w_k - stepsize*(\lambda*w_k + 1/n psi_i(ystar_i))
+        %    w_(k+1) = w_k - stepsize*(\lambda*w_k - 1/n psi_i(ystar_i))
         % with stepsize = 1/(\lambda*(k+1))
         % ***
         %
@@ -276,6 +277,7 @@ for p=1:options.num_passes
         end
     end
 end
+fprintf('\n');
 
 if (options.do_weighted_averaging)
     model.w = wAvg; % return the averaged version

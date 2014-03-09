@@ -26,7 +26,7 @@ if ~isempty(boxes)
 end
 % JFrame = get(handle(gcf),'JavaFrame');
 % JFrame.setMaximized(true);
-drawnow;
+% drawnow;
 % if isSave == 1
 %     saveas(gcf,['./GT/GT_',imName]);
 % end

@@ -1,6 +1,7 @@
-function model = trainmodel_ssvm(name,pos,K,pa,sbin,kk,kkk,fix_def)
+function model = trainmodel_ssvm(name,pos,K,pa,sbin,tsize,kk,kkk,fix_def)
 
 if nargin < 6
+  tsize = [];
   kk = 100;
   kkk = 100;
   fix_def = 0;
@@ -13,15 +14,15 @@ delete(file);
 diary(file);
 
 %% initialization
-cls = [name '_cluster_' num2str(K')'];
-try
-  load([cachedir cls]);
-catch
-  model = initmodel(pos,sbin);
+% cls = [name '_cluster_' num2str(K')'];
+% try
+%   load([cachedir cls]);
+% catch
+  model = initmodel(pos,sbin,tsize);
   def = data_def(pos,model);
   idx = clusterparts(def,K,pa); % each part in each example has a cluster label
-  save([cachedir cls],'def','idx');
-end
+%   save([cachedir cls],'def','idx');
+% end
 
 %% train part filters independently
 for p = 1:length(pa)
@@ -30,7 +31,6 @@ for p = 1:length(pa)
     load([cachedir cls]);
   catch
     %sneg = neg(1:min(length(neg),100));
-    sneg = [];
     models = cell(1,K(p));
     for k = 1:K(p)
       spos = pos(idx{p} == k);
@@ -40,8 +40,9 @@ for p = 1:length(pa)
         spos(n).x2 = spos(n).x2(p);
         spos(n).y2 = spos(n).y2(p);
       end
-      model = initmodel(spos,sbin);
-      [models{k},progress] = train_inner(cls,model,spos,sneg,1,0);
+      model = initmodel(spos,sbin,tsize);
+      warp = 1; debug = 0;
+      [models{k},progress] = train_inner(cls,model,spos,warp,0,fix_def,debug);
     end
     % DEBUG code
     %visualizemodel(models{1})
@@ -68,8 +69,9 @@ catch
 		for n = 1:length(pos)
 			pos(n).mix(p) = idx{p}(n);
 		end
-	end
-  model = train_inner(cls,model,pos,[],0,kk,fix_def);
+  end
+  warp = 0; debug = 0;
+  model = train_inner(cls,model,pos,warp,kk,fix_def,debug);
   save([cachedir cls],'model');
   % DEBUG code
 %   visualizemodel(model)
@@ -88,6 +90,7 @@ catch
   if isfield(pos,'mix')
     pos = rmfield(pos,'mix');
   end
-  model = train_inner(cls,model,pos,[],0,kkk,fix_def);
+  warp = 0; debug = 0;
+  model = train_inner(cls,model,pos,warp,kkk,fix_def,debug);
   save([cachedir cls],'model');
 end

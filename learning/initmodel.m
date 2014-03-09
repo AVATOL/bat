@@ -16,8 +16,8 @@ for n = 1:length(pos)
 end
 % pick 5 percentile area
 areas = sort(h.*w);
-%area = areas(floor(length(areas) * 0.05));
-area = areas(1);
+area = areas(floor(length(areas) * 0.9));
+%area = areas(1);
 % pick dimensions
 nw = sqrt(area/aspect);
 nh = nw*aspect;
@@ -31,7 +31,7 @@ else
 end
 
 % pick dimensions
-if nargin < 3
+if nargin < 3 || isempty(tsize)
   tsize = [floor(nh/model.sbin) floor(nw/model.sbin) nf];
 end
 

@@ -12,7 +12,8 @@ for k = 1:numparts
   Nmix(k) = length(c(k).filterid);
 end
 
-ovec = [0 1 0 -1; 1 0 -1 0];
+%ovec = [0 1 0 -1; 1 0 -1 0];
+ovec = [0; 1];
 I = zeros(numparts,size(ovec,2));
 for k = 2:numparts
   part = c(k);
@@ -26,7 +27,7 @@ end
     
 clf;
 for i = 1:size(ovec,2)
-  subplot(2,2,i);
+  %subplot(2,2,i);
 
   part = c(1);
   % part filter

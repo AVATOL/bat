@@ -11,7 +11,8 @@ for k = 1:numparts
     Nmix(k) = length(c(k).filterid);
 end
 
-ovec = [0 1 0 -1; 1 0 -1 0];
+%ovec = [0 1 0 -1; 1 0 -1 0];
+ovec = [0; 1];
 I = zeros(numparts,size(ovec,2));
 for k = 2:numparts
   part = c(k);
@@ -61,7 +62,7 @@ for i = 1:size(ovec,2)
 end
 
 
-for i = 1:4
+for i = 1:size(ovec,2)
   minx(i) = min(pointall(:,1,i));
   maxx(i) = max(pointall(:,1,i));
   miny(i) = min(pointall(:,2,i));
@@ -75,7 +76,7 @@ Ymax = max(maxy);
 
 clf;
 for i = 1:size(ovec,2)
-  subplot(2,2,i);
+  %subplot(2,2,i);
   plot(pointall(:,1,i),-pointall(:,2,i),'b.','markersize',30);
   hold on;
   for k = 2:numparts

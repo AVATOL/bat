@@ -56,8 +56,8 @@ pt = 1;
 p = parts(1);
 mix = y.mix(1);
 scale = x.pyra.scale(y.level(1));
-px = round((xy(1,1)-1) / scale + x.pyra.padx + 1); % TODO: use testoverlap() better?
-py = round((xy(2,1)-1) / scale + x.pyra.pady + 1);
+px = ceil((xy(1,1)-1) / scale + x.pyra.padx + 1); % TODO: use testoverlap() better?
+py = ceil((xy(2,1)-1) / scale + x.pyra.pady + 1);
 
 phi(pt) = 1;
 pt = pt + 1;
@@ -73,11 +73,11 @@ for k = 2:numparts
   mix = y.mix(k);
   par = p.parent;
   scale = x.pyra.scale(y.level(par)); % TODO: check par and k in different layers
-  ppx = round((xy(1,par)-1) / scale + x.pyra.padx + 1);
-  ppy = round((xy(2,par)-1) / scale + x.pyra.pady + 1);
+  ppx = ceil((xy(1,par)-1) / scale + x.pyra.padx + 1); % TODO: check use ceil or round, round seems incorrect
+  ppy = ceil((xy(2,par)-1) / scale + x.pyra.pady + 1);
   scale = x.pyra.scale(y.level(k));
-  px = round((xy(1,k)-1) / scale + x.pyra.padx + 1);
-  py = round((xy(2,k)-1) / scale + x.pyra.pady + 1);
+  px = ceil((xy(1,k)-1) / scale + x.pyra.padx + 1);
+  py = ceil((xy(2,k)-1) / scale + x.pyra.pady + 1);
   % bias
   phi(pt) = 1;
   pt = pt + 1;

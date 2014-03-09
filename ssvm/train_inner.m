@@ -1,5 +1,5 @@
-function [model, progress] = train_inner(name, model, pos, neg, warp, kk, fix_def,...
-                iter, lambda, duality_gap, do_line_search, overlap, debug) 
+function [model, progress] = train_inner(name, model, pos, warp, kk, fix_def, debug,...
+                iter, lambda, duality_gap, do_line_search, overlap) 
 % Train a structured SVM for DPM
 % model = initialed model, NOTE: for indivi part, model is init by spos
 % pos  = list of positive images with part annotations
@@ -12,13 +12,18 @@ function [model, progress] = train_inner(name, model, pos, neg, warp, kk, fix_de
 
 globals;
 
+if nargin < 7
+  kk = 100;
+  fix_def = 0;
+  debug = 0;
+end
+
 if nargin < 13
+  iter = 100;
   lambda = 1;
   duality_gap = 0.1;
-  iter = 100;
   do_line_search = 1;
-  overlap = 0.6;
-  debug = 1;
+  overlap = 0.5;
 end
 
 % options structure:
@@ -51,7 +56,7 @@ for i = 1:length(pos)
   im = imread(pos(i).im);
   bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
   if warp
-    [im, bbox] = cropposwarp(im, bbox); % NOTE: for speeding up training, may hurt performance
+    %[im, bbox] = cropposwarp(im, bbox); % NOTE: for speeding up training, may hurt performance
   end
   
   pyra = featpyramid(im, model); 

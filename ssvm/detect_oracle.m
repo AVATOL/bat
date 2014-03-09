@@ -31,7 +31,7 @@ INF = 1e10;
 latent = false;
 overlap = param.overlap;
 overlap1 = param.overlap1;
-thresh = param.thresh;
+%thresh = param.thresh;
 
 %im = xi.data;
 pyra = xi.pyra;
@@ -39,7 +39,7 @@ pyra = xi.pyra;
 if nargin > 3 && ~isempty(yi.bbox)
   % do loss augmentation
   latent = true;
-  thresh = -INF;
+  %thresh = -INF;
   bbox = yi.bbox;
 %   if isfield(yi, 'mix')
 %     yi.mix = ones(size(bbox));
@@ -55,12 +55,13 @@ levels = 1:length(pyra.feat);
 % Cache various statistics derived from model
 model = vec2model(model.w, model); % NOTE: update model.filter to do inference
 [components,filters,resp] = modelcomponents(model,pyra);
-boxes = zeros(100000,length(components{1})*4+2);
+%boxes = zeros(100000,length(components{1})*4+2);
+boxes = zeros(length(levels),length(components{1})*4+2);
 
 exs = cell(1,length(levels));
 ex.blocks = [];
 
-cnt = 0;
+%cnt = 0;
 
 % Iterate over random permutation of scales and components,
 for rlevel = levels
@@ -106,6 +107,10 @@ for rlevel = levels
       end % fi
       parts(k).level = level;
       
+      if all(cellfun(@isempty, resp))
+        disp('!!!!! No quantized location overlap with bbox !!!!!!');
+      end
+      
 %       % only used for mixture parts
 %       if latent
 %         for fi = 1:length(f)
@@ -124,54 +129,67 @@ for rlevel = levels
     end % numparts
     
     % Walk from leaves to root of tree, passing message to parent
-    for k = numparts:-1:2
+    for k = numparts:-1:1 % make sure this is reverse of topological order
       if (param.fix_def)
         parts(k).w = repmat([0.01 0 0.01 0]', 1, length(parts(k).defid));
       end
       par = parts(k).parent;
-      [msg,parts(k).Ix,parts(k).Iy,parts(k).Im] = passmsg(parts(k),parts(par));
-      parts(par).score = parts(par).score + msg;
-      %fprintf('>>> detect_oracle.msgpass.k %d\n',k);
+      assert(~isempty(par));
+      if par == 0
+        % Add bias to root score
+        parts(k).score = parts(k).score + parts(k).b;
+        continue
+      end
+      assert(all(par > 0));
+      for pp = par
+        [msg,parts(k).Ix,parts(k).Iy,parts(k).Im] = passmsg(parts(k),parts(pp));
+        parts(pp).score = parts(pp).score + msg;
+        %fprintf('>>> detect_oracle.msgpass.k %d\n',k);
+      end
     end
-    
-    % Add bias to root score
-    parts(1).score = parts(1).score + parts(1).b;
-    [rscore Im] = max(parts(1).score,[],3);
-    
-    % Zero-out invalid regions in latent mode
-    if latent
-      thresh = max(thresh,max(rscore(:)));
-    end
-    
-    if latent
-      [val,ind] = max(rscore(:));
-      [Y,X] = ind2sub(size(rscore),ind);
-    else
-      [Y,X] = find(rscore >= thresh);
+
+    % find max location for each root
+    val = -INF; [Y,X,Im] = deal([]);
+    for k = 1:numparts
+      if any(parts(k).parent > 0)
+        continue
+      end
+      [rscore tIm] = max(parts(k).score,[],3);
+      [tval,tind] = max(rscore(:));
+      if tval > val
+        val = tval;
+        [Y,X] = ind2sub(size(rscore),tind);
+        Im = tIm;
+      end
     end
     
     % Walk back down tree following pointers
     for i = 1:length(X)
-      cnt = cnt + 1;
+      %cnt = cnt + 1;
       x = X(i);
       y = Y(i);
       m = Im(y,x); % mixture
       [box,exs{rlevel}] = backtrack(x,y,m,parts,pyra,ex,latent);
-      boxes(cnt,:) = [box c rscore(y,x)];
+      boxes(rlevel,:) = [box c rscore(y,x)];
     end
   end % c
 end % rlevel
 
-boxes = boxes(1:cnt,:);
+%boxes = boxes(1:cnt,:);
 if latent && ~isempty(boxes)
   [~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
   boxes = boxes(ii,:);
   label.level = ii;
   label.ex = exs{label.level};
+  % DEBUG
+  if isempty(label.ex)
+    dbstop
+  end
 end
 
-[boxes] = nms(boxes,0.3);
+%[boxes] = nms(boxes,0.3);
 
+assert(~isempty(boxes));
 label.bbox = boxes(1,:); % TODO: boxes can be empty
 
 
