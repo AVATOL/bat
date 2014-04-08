@@ -63,6 +63,9 @@ ex.blocks = [];
 
 %cnt = 0;
 
+% DEBUG
+allskipflags = zeros(1,length(levels));
+
 % Iterate over random permutation of scales and components,
 for rlevel = levels
   % Iterate through mixture components
@@ -83,6 +86,7 @@ for rlevel = levels
         end
       end
       if skipflag == 1
+        allskipflags(rlevel) = 1;
         continue;
       end
     end % latent
@@ -108,7 +112,7 @@ for rlevel = levels
       parts(k).level = level;
       
       if all(cellfun(@isempty, resp))
-        disp('!!!!! No quantized location overlap with bbox !!!!!!');
+        error('!!!!! No quantized location overlap with bbox !!!!!!');
       end
       
 %       % only used for mixture parts
@@ -175,6 +179,10 @@ for rlevel = levels
   end % c
 end % rlevel
 
+if all(boxes == 0)
+  error('!!! All boxes are empty !!!\n');
+end
+
 %boxes = boxes(1:cnt,:);
 if latent && ~isempty(boxes)
   [~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
@@ -201,7 +209,7 @@ label.bbox = boxes(1,:); % TODO: boxes can be empty
 % (3) Downsample if necessary
 function [score,Ix,Iy,Im] = passmsg(child,parent)
 
-K   = length(child.filterid);
+K   = length(child.filterid); % # of mixtures in child
 Ny  = size(parent.score,1);
 Nx  = size(parent.score,2);  
 Ix0 = zeros([Ny Nx K]);
@@ -215,7 +223,9 @@ for k = 1:K
   if child.w(3,k) == 0
     child.w(3,k) = child.w(3,k) + 1e-5;
   end
-	[score0(:,:,k),Ix0(:,:,k),Iy0(:,:,k)] = shiftdt(child.score(:,:,k), child.w(1,k), child.w(2,k), child.w(3,k), child.w(4,k),child.startx(k),child.starty(k),Nx,Ny,child.step);
+	[score0(:,:,k),Ix0(:,:,k),Iy0(:,:,k)] = ...
+    shiftdt(child.score(:,:,k), child.w(1,k), child.w(2,k), child.w(3,k), child.w(4,k),...
+      child.startx(k),child.starty(k),Nx,Ny,child.step);
 end
 
 % At each parent location, for each parent mixture 1:L, compute best child mixture 1:K

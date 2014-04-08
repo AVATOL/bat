@@ -4,16 +4,14 @@ globals;
 
 %% configuration
 % data parameters need to be specified
-Species = demo_config('Artibeus');
+Species = demo_config('Glossophaga');
 
 
 Species.part_color = cell(1,Species.num_parts);
 colorset = hsv((length(Species.part_mask)-1) / 2 + 1);
 colorset = [colorset; colorset(2:end,:)];
 colorset = colorset(Species.part_mask,:);
-for i = 1:Species.num_parts
-    Species.part_color{i} = colorset(i,:);
-end
+Species.part_color = mat2cell(colorset, ones(1,Species.num_parts), 3);
 
 % feature parameters
 sbin = 8; % Spatial resolution of HOG cell
@@ -40,7 +38,7 @@ pos = pointtobox(pos,Species.parent,Species.bb_const1,Species.bb_const2);
 neg = getNegativeData([Species.rt_dir,'neg/'],'png');
 
 % visualize training data
-show_data = 0;
+show_data = 1;
 if (show_data == 1)
     % show data
     for i=1:length(pos)
@@ -54,8 +52,9 @@ end
 
 %% training with SSVM
 %model = trainmodel_ssvm(Species.name, pos, Species.num_mix, Species.parent, sbin, 100, 100, 1);
-model = trainmodel_ssvm(Species.name, pos, Species.num_mix, Species.parent, sbin);
-save([Species.name '.mat'], 'Species', 'model');
+tsize = [4 4 32]; kk = 100; kkk = 100; fix_def = 0;
+model = trainmodel_ssvm(Species.name,pos,Species.num_mix,Species.parent,sbin,tsize,kk,kkk,fix_def);
+%save([Species.name '.mat'], 'Species', 'model');
 
 % visualize model
 figure(1); visualizemodel(model);
@@ -74,3 +73,5 @@ for ti = 1:length(testX)
     fprintf('press enter to continue...\n');
     pause;
 end
+
+

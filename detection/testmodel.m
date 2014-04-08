@@ -4,9 +4,9 @@ function [boxes,pscores] = testmodel(name,model,test,suffix)
 
 globals;
 
-try
-  load([cachedir name '_boxes_' suffix]);
-catch
+% try
+%   load([cachedir name '_boxes_' suffix]);
+% catch
   boxes = cell(1,length(test));
   pscores = cell(1,length(test));
   for i = 1:length(test)
@@ -30,8 +30,8 @@ catch
     end
   end
 
-  if nargin < 4
-    suffix = [];
-  end
-  save([cachedir name '_boxes_' suffix], 'boxes','pscores','model');
-end
+%   if nargin < 4
+%     suffix = [];
+%   end
+%   save([cachedir name '_boxes_' suffix], 'boxes','pscores','model');
+% end

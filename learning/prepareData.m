@@ -1,5 +1,6 @@
 function [train test] = prepareData(directory, train_files, test_files)
 % 
+  [train test] = deal([]);
 
   % remove trailing slash from the directory if need be
   if isequal(directory(end), '/') directory = directory(1:end-1); end

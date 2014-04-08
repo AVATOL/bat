@@ -5,6 +5,8 @@ addpath visualization;
 addpath evaluation;
 addpath util;
 addpath(genpath('ssvm'));
+addpath rpm
+
 if isoctave()
   addpath oct;
 else
