@@ -1,4 +1,4 @@
-function [ov,ovu,boxes,pmsgs,parts,bkptr] = detect_fast_initmodel(im, model, lvl)
+function [ov,ovu,boxes,pmsgs,parts,bkptr] = detect_fast_initmodel(im, model, bbox, lvl)
 % boxes = detect(im, model, thresh)
 % Detect objects in input using a model and a score threshold.
 % Higher threshold leads to fewer detections.
@@ -11,10 +11,16 @@ function [ov,ovu,boxes,pmsgs,parts,bkptr] = detect_fast_initmodel(im, model, lvl
 % Compute the feature pyramid and prepare filter
 pyra     = featpyramid(im,model);
 interval = model.interval;
-if nargin > 2
+
+if nargin > 3
   levels   = lvl;
 else
   levels   = 1:length(pyra.feat);
+end
+latent = 1;
+if nargin < 3
+  latent = 0;
+  bbox = [];
 end
 
 % Cache various statistics derived from model
@@ -31,6 +37,22 @@ for rlevel = levels,
   for c  = 1:length(model.components),
     parts    = components{c};
     numparts = length(parts);
+    
+    if latent
+      skipflag = 0;
+      for k = 1:numparts
+        % because all mixtures for one part is the same size, we only need to do this once
+        ovmask = testoverlap(parts(k).sizx(1),parts(k).sizy(1),...
+          pyra,rlevel,bbox(k,:),0.5);
+        if ~any(ovmask)
+          skipflag = 1;
+          break;
+        end
+      end
+      if skipflag == 1
+        continue;
+      end
+    end % latent
 
     % Local scores
     for k = 1:numparts,
@@ -47,15 +69,15 @@ for rlevel = levels,
     
     % Walk from leaves to root of tree, passing message to parent
     pmsgs = cell(1,numparts);
-%     Ixs = cell(1,numparts);
-%     Iys = cell(1,numparts);
+    for k = numparts:-1:2,
+      par = parts(k).parent;
+      pmsgs{k} = passmsg(parts(k),parts(par));
+    end
+    
     for k = numparts:-1:2,
       par = parts(k).parent;
       [msg,parts(k).Ix,parts(k).Iy,parts(k).Ik] = passmsg(parts(k),parts(par));
       parts(par).score = parts(par).score + msg;
-      pmsgs{k} = msg;
-%       Ixs{k} = parts(k).Ix;
-%       Iys{k} = parts(k).Iy;
     end
 
     % Add bias to root score
@@ -83,10 +105,21 @@ for rlevel = levels,
   %     end
     end
     
+    if ~isempty(bbox) % use GT
+      xy = bbox';
+      scale = pyra.scale(rlevel);
+      % parts
+      for k = 1:numparts
+        bkptr(1,k,1) = ceil((xy(1,k)-1) / scale + pyra.padx + 1);
+        bkptr(1,k,2) = ceil((xy(2,k)-1) / scale + pyra.pady + 1);
+      end
+    end
+    
     for k = 1:numparts
       y = bkptr(1,k,2);
       x = bkptr(1,k,1);
-      ov(k) = min(ov(k),parts(k).score(y,x));
+      %ov(k) = max(ov(k),parts(k).score(y,x));
+      ov(k) = min(ov(k),resp{rlevel}{1}(y,x));
       if k > 1
         ovu(k) = min(ovu(k),pmsgs{k}(y,x) - ov(k));
       end

@@ -6,6 +6,23 @@ w0    = zeros(model.len,1);
 wreg  = ones(model.len,1);
 noneg = uint32([]);
 
+isOmi = 0;
+if isfield(model,'ominode') && isfield(model,'omiedge')
+  isOmi = 1;
+end
+
+if isOmi == 1
+  for x = model.ominode
+    j = x.i:x.i+numel(x.w)-1;
+    w(j) = x.w;
+  end
+
+  for x = model.omiedge
+    j = x.i:x.i+numel(x.w)-1;
+    w(j) = x.w;
+  end
+end
+
 for x = model.bias
   j = x.i:x.i+numel(x.w)-1;
   w(j) = x.w;

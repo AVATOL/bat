@@ -201,7 +201,7 @@ for rlevel = levels
       tr = It(y,x); % t_r
       m = Im(y,x,tr); % mixture
       ts = Is(y,x,tr,m);
-      [box,exs{rlevel},ptr{rlevel},subadj{rlevel}] = backtrack(x,y,tr,m,ts,adj,parts,pyra,ex,0); % write = latent
+      [box,exs{rlevel},ptr{rlevel},subadj{rlevel}] = backtrack(x,y,tr,m,ts,adj,parts,pyra,ex,latent); % write = latent
       boxes(rlevel,:) = [box c rscore(y,x)];
     end
   end % c
@@ -368,9 +368,19 @@ if write % TODO: p.xxI and check where ex has been used
 	ex.blocks = [];
 	ex.blocks(end+1).i = p.biasI;
 	ex.blocks(end).x   = 1;
-	f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
-	ex.blocks(end+1).i = p.filterI(mix);
-	ex.blocks(end).x   = f;
+  if tv == 2
+    f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+    tf = 0;
+  elseif tv == 1
+    f = zeros(parts.sizy, parts.sizx, 32);
+    tf = 1;
+  else
+    error('something wrong in backprop!');
+  end
+  ex.blocks(end+1).i = p.filterI(mix);
+  ex.blocks(end).x   = f;
+  ex.blocks(end+1).i = p.onI;
+  ex.blocks(end).x   = tf;
 end
 
 for k = torder(end-1:-1:1)
@@ -409,16 +419,40 @@ for k = torder(end-1:-1:1)
   flags(children(~comb)) = 1;
 	
 	if write
-		ex.blocks(end+1).i = p.biasI(mix,ptr(k,3));
+		ex.blocks(end+1).i = p.biasI(mix,ptr(k,4)); % TODO index par, see parsemodel.m 
 		ex.blocks(end).x   = 1;
-		ex.blocks(end+1).i = p.defI(ptr(k,3));
-		ex.blocks(end).x   = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,3),p);
+		
 		x   = ptr(k,1);
 		y   = ptr(k,2);
-		mix = ptr(k,3);
-		f   = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+    tu  = ptr(k,3);
+		mix = ptr(k,4);
+    if tu == 2
+      f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+      tf = 0;
+    elseif tu == 1
+      f = zeros(parts.sizy, parts.sizx, 32);
+      tf = 1;
+    else
+      error('something wrong in backprop!');
+    end
 		ex.blocks(end+1).i = p.filterI(mix);
 		ex.blocks(end).x = f;
+    ex.blocks(end+1).i = p.onI;
+    ex.blocks(end).x   = tf;
+    
+    if tu == 2 && tv == 2 && tvu == 2
+      df  = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,4),p);
+      tdf = 0;
+    elseif tu == 1 || tv == 1 || tvu == 1
+      df = [0 0 0 0];
+      tdf = 1;
+    else
+      error('something wrong in backprop!');
+    end
+    ex.blocks(end+1).i = p.defI(ptr(k,4));
+		ex.blocks(end).x   = df;
+    ex.blocks(end+1).i = p.omI;
+    ex.blocks(end).x   = tdf;
 	end
 end
 box = reshape(box',1,4*numparts);

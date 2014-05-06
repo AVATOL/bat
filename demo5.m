@@ -4,7 +4,7 @@ globals;
 
 %% configuration
 % data parameters need to be specified
-Species = demo_config('Glossophaga');
+Species = demo_config('Molossus');
 
 
 Species.part_color = cell(1,Species.num_parts);
@@ -78,39 +78,40 @@ end
 % im = imread(testX(1).im);
 % [~,~,boxes,msgs,parts,bkptr] = detect_fast_initmodel(im, model);
 numparts = Species.num_parts;
-allov = ones(length(pos),numparts)*1e10;
-allovu = ones(length(pos),numparts)*1e10;
-for ti = 1:length(pos)
-    im = imread(pos(ti).im);
-    [allov(ti,:),allovu(ti,:)] = detect_fast_initmodel(im, model);
-end
-ov = mean(allov,1);
-ovu = mean(allovu,1);
-
-model.ominode = struct('w',{},'i',{});
-model.omiedge = struct('w',{},'i',{});
-for k = 1:numparts
-  nb = length(model.ominode);
-  b.w = ov(k);
-  b.i = model.len + 1;
-  model.ominode(nb+1) = b;
-  model.len = model.len + numel(b.w);
-  model.components{1}(k).onid = nb+1;
-  
-  if k > 1
-    nb = length(model.omiedge);
-    bb.w = ovu(k);
-    bb.i = model.len + 1;
-    model.omiedge(nb+1) = bb;
-    model.len = model.len + numel(bb.w);
-    model.components{1}(k).omid = nb+1;
-  end
-end
-
-model.adj = zeros(length(model.pa));
-for k = 2:length(model.pa)
-  model.adj(k,model.pa(k)) = 1;
-end
+% allov = ones(length(pos),numparts)*1e10;
+% allovu = ones(length(pos),numparts)*1e10;
+% for ti = 1:length(pos)
+%     im = imread(pos(ti).im);
+%     bbox = [pos(ti).x1' pos(ti).y1' pos(ti).x2' pos(ti).y2'];
+%     [allov(ti,:),allovu(ti,:)] = detect_fast_initmodel(im, model, bbox); %TODO: ov ovu from GT
+% end
+% ov = min(allov,[],1);
+% ovu = min(allovu,[],1);
+% 
+% model.ominode = struct('w',{},'i',{});
+% model.omiedge = struct('w',{},'i',{});
+% for k = 1:numparts
+%   nb = length(model.ominode);
+%   b.w = ov(k);
+%   b.i = model.len + 1;
+%   model.ominode(nb+1) = b;
+%   model.len = model.len + numel(b.w);
+%   model.components{1}(k).onid = nb+1;
+%   
+%   if k > 1
+%     nb = length(model.omiedge);
+%     bb.w = ovu(k);
+%     bb.i = model.len + 1;
+%     model.omiedge(nb+1) = bb;
+%     model.len = model.len + numel(bb.w);
+%     model.components{1}(k).omid = nb+1;
+%   end
+% end
+% 
+% model.adj = zeros(length(model.pa));
+% for k = 2:length(model.pa)
+%   model.adj(k,model.pa(k)) = 1;
+% end
 
 % im = imread(testX(1).im);
 % pyra = featpyramid(im,model);
@@ -123,10 +124,9 @@ for i = 1:1
   im = imread(pos(i).im);
   bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
   B = [pos(i).x1;pos(i).y1;pos(i).x2;pos(i).y2];
-%   B = reshape(B,[4*length(Species.parent),1])';
-  C = B(:,6);
-  im(C(2):C(4),C(1):C(3),:) = 0;
-  im(C(2)+20:C(4)+20,C(1):C(3),:) = 0;
+%   C = B(:,6);
+%   im(C(2):C(4),C(1):C(3),:) = 0;
+%   im(C(2)+20:C(4)+20,C(1):C(3),:) = 0;
   
   pyra = featpyramid(im, model); 
   patterns{i}.pyra = pyra;
@@ -137,24 +137,35 @@ end
 param.overlap   = 0.5;
 param.overlap1   = param.overlap / 2;
 param.fix_def   = 0;
-label = rpm_oracle2(param, model, patterns{1}, labels{1});
-showboxes(im,label.bbox,Species.part_color);
+param.parts = numparts;
+param.len = model.len;
+param.warp = 0;
 
-i = 2;
-im = imread(pos(i).im);
-bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
-B = [pos(i).x1;pos(i).y1;pos(i).x2;pos(i).y2];
-%   B = reshape(B,[4*length(Species.parent),1])';
+label = detect_oracle(param, model, patterns{1}, labels{1});
+w = model2vec(model);
+phi = detect_featuremap(param,[],label);
+w'*phi
 
-for j = 1:numparts
-  disp(['part ' num2str(j)]);
-  bim = im;
-  C = ceil(B(:,j));
-  bim(max(1,C(2)-10):C(4)+10,max(1,C(1)-10):C(3)+10,:) = 0;
-  pyra = featpyramid(bim, model); 
-  pat.pyra = pyra;
-  lab.bbox = bbox;
-  label = rpm_oracle2(param, model, pat, lab);
-  showboxes(bim,label.bbox,Species.part_color);
-  pause
-end
+
+% label = rpm_oracle2(param, model, patterns{1}, labels{1});
+% showboxes(im,label.bbox,Species.part_color);
+% 
+% i = 2;
+% im = imread(pos(i).im);
+% bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
+% B = [pos(i).x1;pos(i).y1;pos(i).x2;pos(i).y2];
+% %   B = reshape(B,[4*length(Species.parent),1])';
+% 
+% radius = 0;
+% for j = 1:numparts
+%   disp(['part ' num2str(j)]);
+%   bim = im;
+%   C = ceil(B(:,j));
+%   bim(max(1,C(2)-radius):C(4)+radius,max(1,C(1)-radius):C(3)+radius,:) = 0;
+%   pyra = featpyramid(bim, model); 
+%   pat.pyra = pyra;
+%   lab.bbox = bbox;
+%   label = rpm_oracle2(param, model, pat, lab);
+%   showboxes(bim,label.bbox,Species.part_color);
+%   pause
+% end
