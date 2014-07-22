@@ -1,17 +1,11 @@
 clear
 close all
 globals;
+dbstop if error
 
 %% configuration
 % data parameters need to be specified
 Species = demo_config('Molossus');
-
-
-Species.part_color = cell(1,Species.num_parts);
-colorset = hsv((length(Species.part_mask)-1) / 2 + 1);
-colorset = [colorset; colorset(2:end,:)];
-colorset = colorset(Species.part_mask,:);
-Species.part_color = mat2cell(colorset, ones(1,Species.num_parts), 3);
 
 % feature parameters
 sbin = 8; % Spatial resolution of HOG cell
@@ -21,6 +15,7 @@ all_files = dir(Species.data_dir);
 png    = arrayfun(@(x) ~isempty(strfind(x.name, 'png')), all_files);
 all_files = all_files(logical(png));
 perm = randperm(numel(all_files));
+% perm = 1:numel(all_files);
 train_index = perm(1:Species.num_train_data);
 test_index = perm(Species.num_train_data+1:end);
 train_files = all_files(train_index);
@@ -35,7 +30,7 @@ annotateParts(Species.data_dir, 'png', '', Species.part_name, train_files);
 % convert annotated points to bounding boxes
 pos = trainX;
 pos = pointtobox(pos,Species.parent,Species.bb_const1,Species.bb_const2);
-neg = getNegativeData([Species.rt_dir,'neg/'],'png');
+% neg = getNegativeData([Species.rt_dir,'neg/'],'png');
 
 % visualize training data
 show_data = 0;
@@ -51,9 +46,9 @@ if (show_data == 1)
 end
 
 %% training with SSVM
-%model = trainmodel_ssvm(Species.name, pos, Species.num_mix, Species.parent, sbin, 100, 100, 1);
+name = Species.name; num_mix = Species.num_mix; parent = Species.parent;
 tsize = [4 4 32]; kk = 100; kkk = 100; fix_def = 0;
-model = trainmodel_ssvm(Species.name,pos,Species.num_mix,Species.parent,sbin,tsize,kk,kkk,fix_def);
+model = trainmodel_ssvm(name,pos,num_mix,parent,sbin,tsize,kk,kkk,fix_def);
 %save([Species.name '.mat'], 'Species', 'model');
 
 % visualize model
@@ -73,6 +68,8 @@ for ti = 1:length(testX)
     fprintf('press enter to continue...\n');
     pause;
 end
+
+return % after was RPM stuffs
 
 %% getting initialization
 % im = imread(testX(1).im);

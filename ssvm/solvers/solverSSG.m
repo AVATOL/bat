@@ -122,6 +122,7 @@ function [model, progress] = solverSSG(model, param, options, kk)
 
 % == getting the problem description:
 phi = param.featureFn; % for \phi(x,y) feature mapping
+loss = param.lossFn;
 
 if isfield(param, 'constraintFn')
     % for backward compatibility with svm-struct-learn
@@ -207,6 +208,12 @@ for p=1:options.num_passes
         % 2) solve the loss-augmented inference for point i
         ystar_i = maxOracle(param, model, patterns{i}, labels{i});
         %fprintf('*** iter %d, id %d\n', p, n);
+
+        % TODO: rscore != lscore: probably because shiftdt() != w*def_vec
+        %rscore = ystar_i.bbox(end);
+        %lscore = model.w'*phi(param, patterns{i}, ystar_i) ...
+        %    + loss(param, labels{i}, ystar_i);
+        %assert( abs(rscore-lscore) < 1e-10 );
                 
         % 3) get the subgradient
         % ***

@@ -10,7 +10,9 @@ function [model, progress] = train_inner(name, model, pos, warp, kk, fix_def, de
 % lambda  = scale factor for regularization
 % overlap = minimum overlap in latent positive search
 
-globals;
+if nargin < 4
+    error('train_inner: required more parameters!');
+end
 
 if nargin < 7
   kk = 100;

@@ -2,13 +2,11 @@ function label = detect_oracle(param, model, xi, yi)
 % do loss-augmented detection on a given example (xi,yi) using
 % model.w as parameter. Param is ignored (included for standard
 % interface). The loss used is normalized Hamming loss.
-% 
-% If yi is not given, then standard prediction is done (i.e. MAP decoding
-% without the loss term).
+% If yi is not given, then MAP decoding without the loss term.
 %
 % INPUT: 
 % param = {overlap, thresh, latent}, where latent == loss-aug
-% model
+% model = 
 % xi = {pyra}
 % yi = {bbox}
 % OUTPUT:
@@ -26,42 +24,31 @@ function label = detect_oracle(param, model, xi, yi)
 % ovmask = sum(ovmasks, 3);
 
 %%
-INF = 1e10;
-
 latent = false;
 overlap = param.overlap;
-overlap1 = param.overlap1;
 %thresh = param.thresh;
-
-%im = xi.data;
 pyra = xi.pyra;
 
 if nargin > 3 && ~isempty(yi.bbox)
   % do loss augmentation
   latent = true;
-  %thresh = -INF;
   bbox = yi.bbox;
-%   if isfield(yi, 'mix')
-%     yi.mix = ones(size(bbox));
-%   end
 end
 
 % Compute the feature pyramid and prepare filter
-%pyra = featpyramid(im,model);
 interval = model.interval;
 levels = 1:length(pyra.feat);
 %levels = levels(randperm(length(levels))); % random increase robustness
 
 % Cache various statistics derived from model
-model = vec2model(model.w, model); % NOTE: update model.filter to do inference
+model = vec2model(model.w, model); % NOTE: update model.filter to do Inference
 [components,filters,resp] = modelcomponents(model,pyra);
-%boxes = zeros(100000,length(components{1})*4+2);
 boxes = zeros(length(levels),length(components{1})*4+2);
+boxes(:,end) = -Inf;
 
+% exs and ex are feature_map
 exs = cell(1,length(levels));
 ex.blocks = [];
-
-%cnt = 0;
 
 % DEBUG
 allskipflags = zeros(1,length(levels));
@@ -85,25 +72,25 @@ for rlevel = levels
           break;
         end
       end
-      if skipflag == 1
+      if skipflag == 1 % DEBUG
         allskipflags(rlevel) = 1;
         continue;
       end
     end % latent
     
-    % local scores and loss augmentation
-    for k = 1:numparts
-      f = parts(k).filterid;
-      level = rlevel-parts(k).scale*interval; % scale is set to 0, so parts in same level as root
-      if isempty(resp{level})
+    level = rlevel-parts(k).scale*interval; % scale is set to 0, so parts in same level as root
+    if isempty(resp{level})
         resp{level} = fconv(pyra.feat{level},filters,1,length(filters));
-      end
+    end
+    
+    % 1) unary scores and loss augmentation
+    for k = 1:numparts
+      f = parts(k).filterid;   
       for fi = 1:length(f)
         % loss augment
         if latent
-            ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap);
-            %ovmask1 = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap1);
-            %ovmask = ~ovmask == ovmask1;
+            ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),...
+                pyra,rlevel,bbox(fi,:),overlap);
             ovmask = ~ovmask;
             resp{level}{f(fi)}(ovmask) = resp{level}{f(fi)}(ovmask) + 1/numparts;
         end       
@@ -114,25 +101,9 @@ for rlevel = levels
       if all(cellfun(@isempty, resp))
         error('!!!!! No quantized location overlap with bbox !!!!!!');
       end
-      
-%       % only used for mixture parts
-%       if latent
-%         for fi = 1:length(f)
-%           if isfield(yi,'mix')
-%             if fi ~= mix(k)
-%               parts(k).score(:,:,fi) = -INF;
-%             end
-%           else
-%             ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap);
-%             tmpscore = parts(k).score(:,:,fi);
-%             tmpscore(~ovmask) = -INF;
-%             parts(k).score(:,:,fi) = tmpscore;
-%           end
-%         end
-%       end % latent
     end % numparts
     
-    % Walk from leaves to root of tree, passing message to parent
+    % 2) Walk from leaves to root of tree, passing message to parent
     for k = numparts:-1:1 % make sure this is reverse of topological order
       if (param.fix_def)
         parts(k).w = repmat([0.01 0 0.01 0]', 1, length(parts(k).defid));
@@ -145,20 +116,21 @@ for rlevel = levels
         continue
       end
       assert(all(par > 0));
+      % pass msg to all parents
       for pp = par
         [msg,parts(k).Ix,parts(k).Iy,parts(k).Im] = passmsg(parts(k),parts(pp));
         parts(pp).score = parts(pp).score + msg;
         %fprintf('>>> detect_oracle.msgpass.k %d\n',k);
       end
-    end
+    end % 2)
 
-    % find max location for each root
-    val = -INF; [Y,X,Im] = deal([]);
+    % 3) find max location for each root
+    val = -Inf; [Y,X,Im] = deal([]);
     for k = 1:numparts
       if any(parts(k).parent > 0)
         continue
       end
-      [rscore tIm] = max(parts(k).score,[],3);
+      [rscore tIm] = max(parts(k).score,[],3); % tIm: mix
       [tval,tind] = max(rscore(:));
       if tval > val
         val = tval;
@@ -167,9 +139,8 @@ for rlevel = levels
       end
     end
     
-    % Walk back down tree following pointers
+    % 4) Walk back down tree following pointers
     for i = 1:length(X)
-      %cnt = cnt + 1;
       x = X(i);
       y = Y(i);
       m = Im(y,x); % mixture
@@ -179,26 +150,22 @@ for rlevel = levels
   end % c
 end % rlevel
 
-if all(boxes == 0)
+if all(boxes(:,1:end-2) == 0)
   error('!!! All boxes are empty !!!\n');
 end
 
-%boxes = boxes(1:cnt,:);
-if latent && ~isempty(boxes)
-  [~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
-  boxes = boxes(ii,:);
+[~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
+boxes = boxes(ii,:);
+%[boxes] = nms(boxes,0.3);
+label.bbox = boxes;
+
+if latent  
   label.level = ii;
   label.ex = exs{label.level};
-  % DEBUG
-  if isempty(label.ex)
+  if isempty(label.ex) % DEBUG
     dbstop
   end
 end
-
-%[boxes] = nms(boxes,0.3);
-
-assert(~isempty(boxes));
-label.bbox = boxes(1,:); % TODO: boxes can be empty
 
 
 %% helper functions

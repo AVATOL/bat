@@ -14,15 +14,9 @@ delete(file);
 diary(file);
 
 %% initialization
-% cls = [name '_cluster_' num2str(K')'];
-% try
-%   load([cachedir cls]);
-% catch
-  model = initmodel(pos,sbin,tsize);
-  def = data_def(pos,model);
-  idx = clusterparts(def,K,pa); % each part in each example has a cluster label
-%   save([cachedir cls],'def','idx');
-% end
+model = initmodel(pos,sbin,tsize);
+def = data_def(pos,model);
+idx = clusterparts(def,K,pa); % each part in each example has a cluster label
 
 %% train part filters independently
 for p = 1:length(pa)
@@ -30,7 +24,6 @@ for p = 1:length(pa)
   try
     load([cachedir cls]);
   catch
-    %sneg = neg(1:min(length(neg),100));
     models = cell(1,K(p));
     for k = 1:K(p)
       spos = pos(idx{p} == k);
@@ -42,7 +35,9 @@ for p = 1:length(pa)
       end
       model = initmodel(spos,sbin,tsize);
       warp = 1; debug = 0;
+      tic
       [models{k},progress] = train_inner(cls,model,spos,warp,0,fix_def,debug);
+      fprintf('part model %d mix %d trained in %.2fs.\n', p, k, toc);
     end
     % DEBUG code
     %visualizemodel(models{1})
@@ -71,7 +66,9 @@ catch
 		end
   end
   warp = 0; debug = 0;
+  tic
   model = train_inner(cls,model,pos,warp,kk,fix_def,debug);
+  fprintf('final1 model trained in %.2fs.\n', toc);
   save([cachedir cls],'model');
   % DEBUG code
 %   visualizemodel(model)
@@ -91,6 +88,8 @@ catch
     pos = rmfield(pos,'mix');
   end
   warp = 0; debug = 0;
+  tic
   model = train_inner(cls,model,pos,warp,kkk,fix_def,debug);
+  fprintf('final model trained in %.2fs.\n', toc);
   save([cachedir cls],'model');
 end

@@ -132,3 +132,9 @@ elseif(strcmp(prefix,'Desmodus'))
         'I1 lower','C lower','P5 lower','M1 lower'};
     Species.part_mask = logical([1 1 1 0 1 1 0 1 1 0 1 1 0]);    
 end
+
+Species.part_color = cell(1,Species.num_parts);
+colorset = hsv((length(Species.part_mask)-1) / 2 + 1);
+colorset = [colorset; colorset(2:end,:)];
+colorset = colorset(Species.part_mask,:);
+Species.part_color = mat2cell(colorset, ones(1,Species.num_parts), 3);

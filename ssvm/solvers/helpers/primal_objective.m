@@ -31,8 +31,8 @@ function [ primal ] = primal_objective( param, maxOracle, model, lambda )
         % hinge loss for point i
         hinge_loss_i = loss_i - model.w'*psi_i;
         
-        %assert(hinge_loss_i >= 0);
-        hinge_loss_i = max(0, hinge_loss_i);
+        assert(hinge_loss_i >= 0);
+%         hinge_loss_i = max(0, hinge_loss_i);
         
         hinge_losses = hinge_losses + hinge_loss_i;
     end
