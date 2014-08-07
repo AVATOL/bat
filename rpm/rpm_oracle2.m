@@ -21,25 +21,26 @@ global Ix_cache Iy_cache It_cache Im_cache Is_cache comb_cache
 INF = 1e10;
 latent = false;
 overlap = param.overlap;
-overlap1 = param.overlap1;
 %thresh = param.thresh;
-
 pyra = xi.pyra;
 
 if nargin > 3 && ~isempty(yi.bbox)
   % latent means to do loss augmentation
   latent = true;
-  %thresh = -INF;
   bbox = yi.bbox;
 end
 
+% Compute the feature pyramid and prepare filter
 interval = model.interval;
 levels = 1:length(pyra.feat);
 
 % get model components
-%*** model = vec2model(model.w, model); % NOTE: update model.filter to do inference
+model = vec2model(model.w, model); % NOTE: update model.filter to do inference
 [components,filters,resp] = parsemodel(model,pyra);
 boxes = zeros(length(levels),length(components{1})*4+2);
+boxes(:,end) = -Inf;
+
+% exs and ex are feature_map
 exs = cell(1,length(levels));
 ptr = cell(1,length(levels));
 subadj = cell(1,length(levels));
@@ -68,13 +69,13 @@ for rlevel = levels
           break;
         end
       end
-      if skipflag == 1
+      if skipflag == 1 % DEBUG
         allskipflags(rlevel) = 1;
         continue;
       end
     end % latent
     
-    % local scores and loss augmentation
+    % 1) unary scores and loss augmentation
     for k = 1:numparts
       f = parts(k).filterid;
       level = rlevel-parts(k).scale*interval; % scale is set to 0, so parts in same level as root
@@ -86,8 +87,6 @@ for rlevel = levels
         % loss augment
         if latent
             ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap);
-            %ovmask1 = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap1);
-            %ovmask = ~ovmask == ovmask1;
             ovmask = ~ovmask;
             resp{level}{f(fi)}(ovmask) = resp{level}{f(fi)}(ovmask) + 1/numparts;
         end       
@@ -99,23 +98,20 @@ for rlevel = levels
       
       if all(cellfun(@isempty, resp))
         error('!!!!! No quantized location overlap with bbox !!!!!!');
-      end
-      
-      % TODO: check if needed to do sth for mix parts
-      
-    end % for numparts local scores 
+      end      
+    end % for numparts 
     
-    % Walk from leaves to root of tree, passing message to parent
+    % 2) Walk from leaves to root of tree, passing message to parent
     adj = model.adj;
     addpath util/graph/
     tporder = topological_sort(adj);
     msg_cache = cell(size(adj));
     Ix_cache = cell(size(adj));
     Iy_cache = cell(size(adj));
-    It_cache = cell(size(adj));
-    Im_cache = cell(size(adj));
-    Is_cache = cell(1,size(adj,1));
-    comb_cache = cell(1,size(adj,1));
+    It_cache = cell(size(adj)); % tv
+    Im_cache = cell(size(adj)); % kv i.e. mixture
+    Is_cache = cell(1,size(adj,1)); % tvu
+    comb_cache = cell(1,size(adj,1)); % all combs of children
     
     for k = tporder % make sure this is reverse of topological order
       % compute score of itself by adding coming messages (decide t_vu)
@@ -130,23 +126,30 @@ for rlevel = levels
       
       children = adj(:,k) == 1;
       combs = cartesianProduct(repmat({[0+1 1+1]},[1 sum(children)])); % tvu
-      cmsgs = msg_cache(children,k);
+      cmsgs = msg_cache(children,k); % (yv,xv,tv,tvu,kv)
+
+      % constrain loop that allow combs form tree structure only
+      if ~isempty(model.tvu_vis{k})
+          combs = model.tvu_vis{k};
+      end
       
       ncb = max(1,size(combs,1));
       %Is = zeros(Ny,Nx,2,L);
-      comb_msg = zeros(Ny,Nx,2,L,ncb);
+      comb_msg = zeros(Ny,Nx,2,L,ncb); % (y,x,tv,kv)
       % TODO: now DAG is assumed to be a tree. check tree constraint (single parent)
       for ci = 1:size(combs,1)
         for u = 1:size(combs,2)
           if isempty(cmsgs{u})
             continue
           end
+          % get all combinations of coming msgs (tvu)
           comb_msg(:,:,:,:,ci) = comb_msg(:,:,:,:,ci) + squeeze(cmsgs{u}(:,:,:,combs(ci,u),:));
         end
       end
-      [comb_msg,Is_cache{k}] = max(comb_msg,[],5);
+      [comb_msg,Is_cache{k}] = max(comb_msg,[],5); % local greedy maximizing over combs
+      
       if ~isempty(comb_msg)
-        parts(k).score = parts(k).score + comb_msg;
+        parts(k).score = parts(k).score + comb_msg; % (y,x,tv,kv)
       end
       comb_cache{k} = combs;
       
@@ -160,11 +163,10 @@ for rlevel = levels
       
       % root: no passing only add bias
       % score_r(yr,xr,tr,kr) += b_r(:,1,1)
-      % TODO: every node adds a bias
       if par == 0
-        %b = parts(k).b(:,1,1);
-        %b = shiftdim(b,-3);
-        %parts(k).score = bsxfun(@plus,parts(k).score,b);
+        b = parts(k).b(:,1,1);
+        b = shiftdim(b,-3);
+        parts(k).score = bsxfun(@plus,parts(k).score,b);
         continue
       end
       
@@ -173,11 +175,16 @@ for rlevel = levels
       for pp = par
         [msg_cache{k,pp},Ix_cache{k,pp},Iy_cache{k,pp},It_cache{k,pp},Im_cache{k,pp}] ...
           = passmsg(parts(k),parts(pp));
+
+        % parts that always visible
+        if model.tu_vis(k) 
+            It_cache{k,pp} = It_cache{k,pp} .* 0 + 2;
+        end
       end
     end % message passing
 
-    % find max location for each root and use the root with max score
-    val = -INF; [Y,X,It,Im] = deal([]);
+    % 3) find max location for each root and use the root with max score
+    val = -Inf; [Y,X,It,Im] = deal([]);
     for k = 1:numparts
       if any(parts(k).parent > 0)
         continue
@@ -193,8 +200,13 @@ for rlevel = levels
         Is = Is_cache{k};
       end
     end
+
+    % parts that always visible
+    if model.tu_vis(1)
+        It = It .* 0 + 2;
+    end
     
-    % Walk back down tree following pointers
+    % 4) Walk back down tree following pointers
     for i = 1:length(X) % TODO: length correct?
       x = X(i);
       y = Y(i);
@@ -207,29 +219,25 @@ for rlevel = levels
   end % c
 end % rlevel
 
-if all(boxes == 0)
+if all(boxes(:,1:end-2) == 0)
   error('!!! All boxes are empty !!!\n');
 end
 
-%boxes = boxes(1:cnt,:);
-if latent && ~isempty(boxes)
-  [~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
-  boxes = boxes(ii,:);
+[~,ii] = max(boxes(:,end)); % TODO: test which better: max or random (ii = end)
+boxes = boxes(ii,:);
+%[boxes] = nms(boxes,0.3);
+label.bbox = boxes;
+
+if latent 
   label.level = ii;
   label.ex = exs{label.level};
   label.ptr = ptr{label.level};
   label.subadj = subadj{label.level};
-  % DEBUG
-  if isempty(label.ex)
+
+  if isempty(label.ex) % DEBUG
     dbstop
   end
 end
-
-%[boxes] = nms(boxes,0.3);
-
-assert(~isempty(boxes));
-label.bbox = boxes(1,:); % TODO: boxes can be empty
-
 
 %% helper functions
 
@@ -320,7 +328,7 @@ for l = 1:L
 	i = i0 + N*(I-1); % i is 4-dim array
 	Ix(:,:,:,:,l)    = Ix0(i);
 	Iy(:,:,:,:,l)    = Iy0(i);
-  It(:,:,:,:,l)    = It0(i);
+    It(:,:,:,:,l)    = It0(i);
 	Ik(:,:,:,:,l)    = I;
 end
 
@@ -330,6 +338,11 @@ end
 function [box,ex,ptr,subadj] = backtrack(x,y,tv,mix,ts,adj,parts,pyra,ex,write)
 % (x,y) is root location
 % ex: feature map
+%
+% OUTPUT:
+% ex: feature map
+% ptr: (x y tv mix)
+% subadj: 1-absent, 2-present
 
 global Ix_cache Iy_cache It_cache Im_cache Is_cache comb_cache
 
@@ -337,8 +350,7 @@ numparts = length(parts);
 ptr = zeros(numparts,4);
 box = zeros(numparts,4);
 %combs = cell(numparts,1);
-flags = zeros(numparts,1);
-% fifo = []; % BFS
+flags = zeros(numparts,1); % flag which edge is invisiable-1, visiable-2
 subadj = zeros(size(adj));
 
 torder = topological_sort(adj);
@@ -348,7 +360,6 @@ children = find(adj(:,k) == 1);
 ptr(k,:) = [x y tv mix];
 subadj(children,k) = comb_cache{k}(ts,:)';
 
-% fifo = [fifo children(combs)];
 comb = comb_cache{k}(ts,:) == 2;
 flags(children(comb)) = 2;
 flags(children(~comb)) = 1;
@@ -364,41 +375,41 @@ box(k,:) = [x1 y1 x2 y2];
 
 if write % TODO: p.xxI and check where ex has been used
 	%ex.id(3:5) = [p.level round(x+p.sizx(mix)/2) round(y+p.sizy(mix)/2)];
-  ex.level = p.level;
+    ex.level = p.level;
 	ex.blocks = [];
 	ex.blocks(end+1).i = p.biasI;
 	ex.blocks(end).x   = 1;
-  if tv == 2
-    f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
-    tf = 0;
-  elseif tv == 1
-    f = zeros(parts.sizy, parts.sizx, 32);
-    tf = 1;
-  else
-    error('something wrong in backprop!');
-  end
-  ex.blocks(end+1).i = p.filterI(mix);
-  ex.blocks(end).x   = f;
-  ex.blocks(end+1).i = p.onI;
-  ex.blocks(end).x   = tf;
+    if tv == 2
+      f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+      tf = 0;
+    elseif tv == 1
+      f = zeros(p.sizy, p.sizx, 32);
+      tf = 1;
+    else
+      error('something wrong in backprop!');
+    end
+    ex.blocks(end+1).i = p.filterI(mix);
+    ex.blocks(end).x   = f;
+    ex.blocks(end+1).i = p.onI;
+    ex.blocks(end).x   = tf;
 end
 
 for k = torder(end-1:-1:1)
-  assert(flags(k) > 0);
-  
-  children = find(adj(:,k) == 1);
-  p   = parts(k);
-  par = p.parent;
+    assert(flags(k) > 0);
+    
+    children = find(adj(:,k) == 1);
+    p   = parts(k);
+    par = p.parent;
 	x   = ptr(par,1);
 	y   = ptr(par,2);
-  tv  = ptr(par,3);
+    tv  = ptr(par,3);
 	mix = ptr(par,4);
-  tvu = subadj(k,par);
+    tvu = subadj(k,par);
   
-  ptr(k,1) = Ix_cache{k,par}(y,x,tv,tvu,mix);
+    ptr(k,1) = Ix_cache{k,par}(y,x,tv,tvu,mix);
 	ptr(k,2) = Iy_cache{k,par}(y,x,tv,tvu,mix);
 	ptr(k,3) = It_cache{k,par}(y,x,tv,tvu,mix);
-  ptr(k,4) = Im_cache{k,par}(y,x,tv,tvu,mix);
+    ptr(k,4) = Im_cache{k,par}(y,x,tv,tvu,mix);
   
 	scale = pyra.scale(p.level);
 	x1  = (ptr(k,1) - 1 - pyra.padx)*scale+1;
@@ -407,54 +418,54 @@ for k = torder(end-1:-1:1)
 	y2  = y1 + p.sizy(ptr(k,4))*scale - 1;
 	box(k,:) = [x1 y1 x2 y2];
   
-  if isempty(children) 
-    continue
-  end
-  ts = Is_cache{k}(y,x,tv,mix);
-  subadj(children,k) = comb_cache{k}(ts,:)';
+    if isempty(children) 
+      continue
+    end
+    ts = Is_cache{k}(y,x,tv,mix);
+    subadj(children,k) = comb_cache{k}(ts,:)';
 
-  % fifo = [fifo children(combs)];
-  comb = comb_cache{k}(ts,:) == 2;
-  flags(children(comb)) = 2;
-  flags(children(~comb)) = 1;
+    % fifo = [fifo children(combs)];
+    comb = comb_cache{k}(ts,:) == 2;
+    flags(children(comb)) = 2;
+    flags(children(~comb)) = 1;
 	
 	if write
-		ex.blocks(end+1).i = p.biasI(mix,ptr(k,4)); % TODO index par, see parsemodel.m 
+		ex.blocks(end+1).i = p.biasI(ptr(k,4),mix); % TODO choose right par, see parsemodel.m 
 		ex.blocks(end).x   = 1;
 		
 		x   = ptr(k,1);
 		y   = ptr(k,2);
-    tu  = ptr(k,3);
+        tu  = ptr(k,3);
 		mix = ptr(k,4);
-    if tu == 2
-      f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
-      tf = 0;
-    elseif tu == 1
-      f = zeros(parts.sizy, parts.sizx, 32);
-      tf = 1;
-    else
-      error('something wrong in backprop!');
-    end
+        if tu == 2
+          f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+          tf = 0;
+        elseif tu == 1
+          f = zeros(p.sizy, p.sizx, 32);
+          tf = 1;
+        else
+          error('something wrong in backprop!');
+        end
 		ex.blocks(end+1).i = p.filterI(mix);
 		ex.blocks(end).x = f;
-    ex.blocks(end+1).i = p.onI;
-    ex.blocks(end).x   = tf;
-    
-    if tu == 2 && tv == 2 && tvu == 2
-      df  = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,4),p);
-      tdf = 0;
-    elseif tu == 1 || tv == 1 || tvu == 1
-      df = [0 0 0 0];
-      tdf = 1;
-    else
-      error('something wrong in backprop!');
-    end
-    ex.blocks(end+1).i = p.defI(ptr(k,4));
-		ex.blocks(end).x   = df;
-    ex.blocks(end+1).i = p.omI;
-    ex.blocks(end).x   = tdf;
-	end
-end
+        ex.blocks(end+1).i = p.onI;
+        ex.blocks(end).x   = tf;
+        
+        if tu == 2 && tv == 2 && tvu == 2
+          df  = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,4),p);
+          tdf = 0;
+        elseif tu == 1 || tv == 1 || tvu == 1
+          df = [0 0 0 0];
+          tdf = 1;
+        else
+          error('something wrong in backprop!');
+        end
+        ex.blocks(end+1).i = p.defI(ptr(k,4));
+	    ex.blocks(end).x   = df; % TODO: choose right par
+        ex.blocks(end+1).i = p.omI;
+        ex.blocks(end).x   = tdf;
+	end % if write
+end % k
 box = reshape(box',1,4*numparts);
 
 % enumerate all combinations equivalent tp cartesian product

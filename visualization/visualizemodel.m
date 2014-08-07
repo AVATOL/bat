@@ -1,4 +1,8 @@
-function visualizemodel(model)
+function visualizemodel(model, ignored_part)
+
+if nargin < 2
+    ignored_part = [];
+end
 
 pad = 2;
 bs = 20;
@@ -6,6 +10,10 @@ bs = 20;
 % assuming only one component
 c = model.components{1};
 numparts = length(c);
+
+set_parts = setdiff(1:numparts, ignored_part);
+%numparts = length(set_parts);
+set_parts = set_parts(2:end);
 
 Nmix = zeros(1,numparts);
 for k = 1:numparts
@@ -15,7 +23,7 @@ end
 %ovec = [0 1 0 -1; 1 0 -1 0];
 ovec = [0; 1];
 I = zeros(numparts,size(ovec,2));
-for k = 2:numparts
+for k = set_parts
   part = c(k);
   anchor = zeros(Nmix(k),2);
   for j = 1:Nmix(k) 
@@ -46,7 +54,7 @@ for i = 1:size(ovec,2)
   startpoint = zeros(numparts,2);
   startpoint(1,:) = [0 0];
 
-  for k = 2:numparts
+  for k = set_parts
     part = c(k);
     parent = c(k).parent;
 

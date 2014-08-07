@@ -76,6 +76,7 @@ param.patterns  = patterns;
 param.labels    = labels; 
 param.lossFn    = @detect_loss;
 param.oracleFn  = @detect_oracle;
+% param.oracleFn  = @rpm_oracle2;
 param.featureFn = @detect_featuremap;
 param.parts     = parts;
 param.warp      = warp;

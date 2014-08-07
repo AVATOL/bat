@@ -10,16 +10,16 @@ end
 
 if isOmi == 1
   % ominode
-  for i = 1:length(model.bias)
-      x = model.bias(i);
+  for i = 1:length(model.ominode)
+      x = model.ominode(i);
       s = size(x.w);
       j = x.i:x.i+prod(s)-1;
       model.ominode(i).w = reshape(w(j),s);
   end
 
   % omiedge
-  for i = 1:length(model.bias)
-      x = model.bias(i);
+  for i = 1:length(model.omiedge)
+      x = model.omiedge(i);
       s = size(x.w);
       j = x.i:x.i+prod(s)-1;
       model.omiedge(i).w = reshape(w(j),s);

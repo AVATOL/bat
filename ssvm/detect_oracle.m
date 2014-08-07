@@ -78,19 +78,18 @@ for rlevel = levels
       end
     end % latent
     
-    level = rlevel-parts(k).scale*interval; % scale is set to 0, so parts in same level as root
-    if isempty(resp{level})
-        resp{level} = fconv(pyra.feat{level},filters,1,length(filters));
-    end
-    
     % 1) unary scores and loss augmentation
     for k = 1:numparts
       f = parts(k).filterid;   
+      level = rlevel-parts(k).scale*interval; % scale is set to 0, so parts in same level as root
+      if isempty(resp{level})
+          resp{level} = fconv(pyra.feat{level},filters,1,length(filters));
+      end
+    
       for fi = 1:length(f)
         % loss augment
         if latent
-            ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),...
-                pyra,rlevel,bbox(fi,:),overlap);
+            ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox(k,:),overlap);
             ovmask = ~ovmask;
             resp{level}{f(fi)}(ovmask) = resp{level}{f(fi)}(ovmask) + 1/numparts;
         end       

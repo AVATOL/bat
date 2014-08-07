@@ -1,16 +1,26 @@
-function showboxes(im, boxes, partcolor, omit, isSave, imName)
+%function showboxes(im, boxes, partcolor, omit, isSave, imName)
+function showboxes(im, boxes, partcolor, omit, linst)
 
-numparts = length(partcolor);
 if nargin < 3
 	%partcolor = {'g','g','y','r','r','y','m','m','y','b','b','y','c','c'};
-    partcolor = {'g','g','r','r','r','r','b','b','b','b'};
-    isSave = 0;
-    imName = 'picture.png';
+    partcolor = {'g','r','r','r','r','r','b','b','b','b','b'};
+    %isSave = 0;
+    %imName = 'picture.png';
+    numparts = length(partcolor);
     omit = zeros(1,numparts);
+    linst = '-';
+end
+
+numparts = length(partcolor);
+
+if nargin < 5
+    linst = '-';
 end
 if nargin < 4
     omit = zeros(1,numparts);
+    linst = '-';
 end
+
 if length(omit) ~= numparts
   tmp = zeros(1,numparts);
   tmp(omit) = 1;
@@ -31,7 +41,7 @@ if ~isempty(boxes)
       continue
     end
 		line([x1(:,p) x1(:,p) x2(:,p) x2(:,p) x1(:,p)]',[y1(:,p) y2(:,p) y2(:,p) y1(:,p) y1(:,p)]',...
-		'color',partcolor{p},'linewidth',2);
+		'color',partcolor{p},'linewidth',2,'LineStyle',linst);
         hold on
         plot(x1(:,p)/2+x2(:,p)/2, y1(:,p)/2+y2(:,p)/2,'.','MarkerSize',15,'color',partcolor{p});
 	end

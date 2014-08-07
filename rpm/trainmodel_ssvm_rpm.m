@@ -44,6 +44,7 @@ for p = 1:length(pa)
       warp = 1; debug = 0;
       [models{k},progress] = train_inner(cls,model,spos,warp,0,fix_def,debug);
     end
+    
     % DEBUG code
     %visualizemodel(models{1})
     %norm(models{1}.w,2)
@@ -65,6 +66,7 @@ if force || ~exist([cachedir cls], 'file')
   numparts = length(pa);
   allov = ones(length(pos),numparts)*1e10;
   allovu = ones(length(pos),numparts)*1e10;
+  model = buildmodel(name,model,def,idx,K,pa);
   for ti = 1:length(pos)
       im = imread(pos(ti).im);
       bbox = [pos(ti).x1' pos(ti).y1' pos(ti).x2' pos(ti).y2'];
@@ -72,9 +74,20 @@ if force || ~exist([cachedir cls], 'file')
   end
   ov = min(allov,[],1);
   ovu = min(allovu,[],1);
+  
+  % DEBUG
+  ov = ones(size(ov)) .* -10;
+  ovu = ones(size(ovu)) .* -10;
+%   ov = max(0,ov);
+%   ovu = max(0,ovu);
 
   model = buildmodel_rpm(name,model,def,idx,K,pa,ov,ovu); % combine parts
-  return % *********
+  model.tu_vis = 2 .* ones(size(model.pa));
+  model.tvu_vis = cell(length(model.pa),1);
+  for k = 1:length(model.pa)
+      model.tvu_vis{k} = 2 .* ones(1,sum(model.adj(:,k)));
+  end
+%   return % *********
 end
 
 try
@@ -89,6 +102,7 @@ catch
   warp = 0; debug = 0;
   model = train_inner(cls,model,pos,warp,kk,fix_def,debug);
   save([cachedir cls],'model');
+  
   % DEBUG code
 %   visualizemodel(model)
 %   visualizeskeleton(model)

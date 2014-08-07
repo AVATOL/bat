@@ -23,7 +23,7 @@ for n = 1:length(test)
   if isempty(boxes{n})
     continue;
   end
-	box = boxes{n};
+  box = boxes{n};
   b = box(:,1:floor(size(box, 2)/4)*4);
   b = reshape(b,size(b,1),4,size(b,2)/4);
   b = permute(b,[1 3 2]);

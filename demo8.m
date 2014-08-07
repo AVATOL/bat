@@ -6,13 +6,6 @@ globals;
 % data parameters need to be specified
 Species = demo_config('Molossus');
 
-
-Species.part_color = cell(1,Species.num_parts);
-colorset = hsv((length(Species.part_mask)-1) / 2 + 1);
-colorset = [colorset; colorset(2:end,:)];
-colorset = colorset(Species.part_mask,:);
-Species.part_color = mat2cell(colorset, ones(1,Species.num_parts), 3);
-
 % feature parameters
 sbin = 8; % Spatial resolution of HOG cell
 
@@ -35,7 +28,7 @@ annotateParts(Species.data_dir, 'png', '', Species.part_name, train_files);
 % convert annotated points to bounding boxes
 pos = trainX;
 pos = pointtobox(pos,Species.parent,Species.bb_const1,Species.bb_const2);
-neg = getNegativeData([Species.rt_dir,'neg/'],'png');
+%neg = getNegativeData([Species.rt_dir,'neg/'],'png');
 
 % visualize training data
 show_data = 0;

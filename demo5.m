@@ -5,7 +5,7 @@ dbstop if error
 
 %% configuration
 % data parameters need to be specified
-Species = demo_config('Molossus');
+Species = demo_config('Noctilio');
 
 % feature parameters
 sbin = 8; % Spatial resolution of HOG cell

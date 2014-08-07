@@ -4,7 +4,7 @@ globals;
 
 %% configuration
 % data parameters need to be specified
-Species = demo_config('Artibeus');
+Species = demo_config('Molossus');
 
 
 Species.part_color = cell(1,Species.num_parts);
@@ -68,7 +68,7 @@ model.thresh = min(model.thresh,-5);
 figure(3);
 for ti = 1:length(testX)
     im = imread(testX(ti).im);
-    showboxes(im, boxes{ti}(1:2,:), Species.part_color);
+    showboxes(im, boxes{ti}(1,:), Species.part_color);
     fprintf('press enter to continue...\n');
     pause;
 end

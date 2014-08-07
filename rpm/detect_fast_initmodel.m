@@ -31,6 +31,7 @@ val = -1e10;
 numparts = length(model.components{1});
 ov = ones(1,numparts)*1e10;
 ovu = ones(1,numparts)*1e10;
+ovu(1) = 0;
 
 % Iterate over scales and components,
 for rlevel = levels,
