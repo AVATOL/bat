@@ -257,6 +257,8 @@ for k = 2:numparts
 		ex.blocks(end).x   = 1;
 		ex.blocks(end+1).i = p.defI(ptr(k,3));
 		ex.blocks(end).x   = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,3),p);
+        % DEBUG
+        %fprintf('k=%d,x=%f,y=%d,%f,%f,%f\n',k,x,y,ptr(k,1),ptr(k,2),ptr(k,3));
 		x   = ptr(k,1);
 		y   = ptr(k,2);
 		mix = ptr(k,3);

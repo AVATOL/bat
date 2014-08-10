@@ -208,12 +208,43 @@ for p=1:options.num_passes
         % 2) solve the loss-augmented inference for point i
         ystar_i = maxOracle(param, model, patterns{i}, labels{i});
         %fprintf('*** iter %d, id %d\n', p, n);
-
+        
         % TODO: rscore != lscore: probably because shiftdt() != w*def_vec
         %rscore = ystar_i.bbox(end);
         %lscore = model.w'*phi(param, patterns{i}, ystar_i) ...
         %    + loss(param, labels{i}, ystar_i);
         %assert( abs(rscore-lscore) < 1e-10 );
+        
+%         % --- DEBUG ---
+%         ysanity = detect_oracle(param, model, patterns{i}, labels{i});
+%         
+%         if any(abs(ystar_i.bbox - ysanity.bbox) > 1e-3)
+%             error('RPM is diff from DPM');
+%         end
+%         
+%         w_on = [514,1032,1033,1551,1552,2070,2071,2589,2590,3108,3109,3627,3628,4146,4147,4665,4666,5184,5185,5703,5704;];
+%         len_w_on = length(w_on);
+%         f_gt = phi(param, patterns{i}, labels{i});
+%         f_pd = phi(param, patterns{i}, ystar_i);
+%         fsanity_gt = detect_featuremap(param, patterns{i}, labels{i});
+%         fsanity = detect_featuremap(param, patterns{i}, ysanity);
+%         
+%         f_gt(w_on) = [];
+%         f_pd(w_on) = [];
+%         fsanity_gt = fsanity_gt(1:end-len_w_on);
+%         %fsanity = fsanity(1:end-len_w_on);
+%         fsanity(w_on) = [];
+%         if any(abs(f_gt - fsanity_gt) > 1e-3)
+%             error('RPM is diff from DPM');
+%         end
+%         if any(abs(f_pd - fsanity) > 1e-3)
+%             error('RPM is diff from DPM');
+%         end
+%
+%         partcolor = {'g','r','r','r','r','r','b','b','b','b','b'};
+%         B = labels{i}.bbox';
+%         B = reshape(B,[44,1])';
+%         figure(12); showboxes_compare(patterns{i}.im, ystar_i.bbox, B, partcolor);        
                 
         % 3) get the subgradient
         % ***
@@ -229,6 +260,11 @@ for p=1:options.num_passes
         psi_i = phi(param, patterns{i}, labels{i})-phi(param, patterns{i}, ystar_i);
         w_s = 1/(n*lambda) * psi_i;
         
+%         if any(psi_i(watch_on) ~= 0)
+%             i
+%             dbstop
+%         end
+
         % 4) step-size gamma:
         gamma = 1/(k+1);
         
@@ -297,7 +333,7 @@ function options = defaultOptions(n)
 
 options = [];
 options.num_passes = 50;
-options.do_weighted_averaging = 1;
+options.do_weighted_averaging = 0; % NOTE: seems without averaging better
 options.time_budget = inf;
 options.debug = 0;
 options.rand_seed = 1;

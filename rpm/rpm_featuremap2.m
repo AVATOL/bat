@@ -27,6 +27,10 @@ if isfield(y, 'ex')
     is = i1:i2; % TODO: make sure indices are correct
     f  = reshape(b.x,n,1);
     phi(is) = f;
+    % DEBUG
+    %if length(is) == 4*4*32
+    %    fprintf('start: %d, end: %d, meanvalue = %f\n', i1, i2, mean(f));
+    %end
   end
   return
 end
@@ -51,6 +55,9 @@ if ~isfield(y, 'mix')
   y.mix = ones(numparts, 1);
 end
 
+nodes = y.nodes;
+edges = y.edges;
+
 % root
 pt = 1;
 p = parts(1);
@@ -66,6 +73,13 @@ f = x.pyra.feat{y.level(1)}(py:py+p.sizy(mix)-1,px:px+p.sizx(mix)-1,:);
 wdim = p.sizy(mix)*p.sizx(mix)*32;
 phi(pt:pt+wdim-1) = f;
 pt = pt + wdim;
+
+if nodes(1)
+    phi(pt) = 0;
+else
+    phi(pt) = 1;
+end
+pt = pt + 1;
 
 % parts
 for k = 2:numparts
@@ -90,6 +104,20 @@ for k = 2:numparts
   fd = defvector(ppx,ppy,px,py,mix,p);
   phi(pt:pt+4-1) = fd;
   pt = pt + 4;
+  % ominode
+  if nodes(k)
+      phi(pt) = 0;
+  else
+      phi(pt) = 1;
+  end
+  pt = pt + 1;
+  % omiedge
+  if edges(k-1)
+      phi(pt) = 0;
+  else
+      phi(pt) = 1;
+  end
+  pt = pt + 1;
 end
 
-
+assert(pt - 1 == len);

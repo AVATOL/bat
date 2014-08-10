@@ -76,12 +76,12 @@ if force || ~exist([cachedir cls], 'file')
   ovu = min(allovu,[],1);
   
   % DEBUG
-  ov = ones(size(ov)) .* -10;
-  ovu = ones(size(ovu)) .* -10;
-%   ov = max(0,ov);
-%   ovu = max(0,ovu);
+  ov = ones(size(ov)) .* -100000;
+  ovu = ones(size(ovu)) .* -100000;
 
   model = buildmodel_rpm(name,model,def,idx,K,pa,ov,ovu); % combine parts
+  
+  % DEBUG
   model.tu_vis = 2 .* ones(size(model.pa));
   model.tvu_vis = cell(length(model.pa),1);
   for k = 1:length(model.pa)
@@ -93,7 +93,7 @@ end
 try
   load([cachedir cls]);
 catch
-  model.w = model2vec(model);
+  model.w = model2vec(model); % initialization from separated learned models
   for p = 1:length(pa)
 		for n = 1:length(pos)
 			pos(n).mix(p) = idx{p}(n);

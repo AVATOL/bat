@@ -304,6 +304,10 @@ for tv = 1:Du
       end % if
 
       [msg0(:,:,tv,tvu,k),itu] = max(oscore,[],3); % return Ny by Nx matrix
+      if any(itu(:) < 2)
+          fprintf('--ominode is using!\n');
+      end
+      
       It0(:,:,tv,tvu,k) = itu;
       N = Ny*Nx;
       i0 = reshape(1:N,Ny,Nx);
@@ -377,19 +381,27 @@ if write % TODO: p.xxI and check where ex has been used
 	%ex.id(3:5) = [p.level round(x+p.sizx(mix)/2) round(y+p.sizy(mix)/2)];
     ex.level = p.level;
 	ex.blocks = [];
+    
+    % bias
 	ex.blocks(end+1).i = p.biasI;
 	ex.blocks(end).x   = 1;
+    
     if tv == 2
       f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
       tf = 0;
     elseif tv == 1
       f = zeros(p.sizy, p.sizx, 32);
       tf = 1;
+      fprintf('-- [write] ominode is using!\n');
     else
       error('something wrong in backprop!');
     end
+    
+    % filter
     ex.blocks(end+1).i = p.filterI(mix);
     ex.blocks(end).x   = f;
+    
+    % ominode
     ex.blocks(end+1).i = p.onI;
     ex.blocks(end).x   = tf;
 end
@@ -418,18 +430,18 @@ for k = torder(end-1:-1:1)
 	y2  = y1 + p.sizy(ptr(k,4))*scale - 1;
 	box(k,:) = [x1 y1 x2 y2];
   
-    if isempty(children) 
-      continue
-    end
-    ts = Is_cache{k}(y,x,tv,mix);
-    subadj(children,k) = comb_cache{k}(ts,:)';
+    if ~isempty(children) 
+        ts = Is_cache{k}(y,x,tv,mix);
+        subadj(children,k) = comb_cache{k}(ts,:)';
 
-    % fifo = [fifo children(combs)];
-    comb = comb_cache{k}(ts,:) == 2;
-    flags(children(comb)) = 2;
-    flags(children(~comb)) = 1;
+        % fifo = [fifo children(combs)];
+        comb = comb_cache{k}(ts,:) == 2;
+        flags(children(comb)) = 2;
+        flags(children(~comb)) = 1;
+    end
 	
 	if write
+        % bias
 		ex.blocks(end+1).i = p.biasI(ptr(k,4),mix); % TODO choose right par, see parsemodel.m 
 		ex.blocks(end).x   = 1;
 		
@@ -437,31 +449,44 @@ for k = torder(end-1:-1:1)
 		y   = ptr(k,2);
         tu  = ptr(k,3);
 		mix = ptr(k,4);
+        
         if tu == 2
           f  = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
           tf = 0;
         elseif tu == 1
           f = zeros(p.sizy, p.sizx, 32);
           tf = 1;
+          fprintf('-- [write] ominode is using!\n');
         else
           error('something wrong in backprop!');
         end
+        
+        % filter
 		ex.blocks(end+1).i = p.filterI(mix);
 		ex.blocks(end).x = f;
-        ex.blocks(end+1).i = p.onI;
-        ex.blocks(end).x   = tf;
         
         if tu == 2 && tv == 2 && tvu == 2
-          df  = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,4),p);
+          df  = defvector(ptr(par,1),ptr(par,2),ptr(k,1),ptr(k,2),ptr(k,4),p);
+          % DEBUG
+          %fprintf('k=%d,x=%f,y=%d,%f,%f,%f\n',k,x,y,ptr(k,1),ptr(k,2),ptr(k,4));
           tdf = 0;
         elseif tu == 1 || tv == 1 || tvu == 1
           df = [0 0 0 0];
           tdf = 1;
+          fprintf('-- [write] omiedge is using!\n');
         else
           error('something wrong in backprop!');
         end
+        
+        % def
         ex.blocks(end+1).i = p.defI(ptr(k,4));
 	    ex.blocks(end).x   = df; % TODO: choose right par
+        
+        % ominode
+        ex.blocks(end+1).i = p.onI;
+        ex.blocks(end).x   = tf;
+        
+        % omiedge
         ex.blocks(end+1).i = p.omI;
         ex.blocks(end).x   = tdf;
 	end % if write
