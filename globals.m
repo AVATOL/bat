@@ -14,7 +14,8 @@ else
 end
 
 % directory for caching models, intermediate data, and results
-cachedir = 'cache/';
+% cachedir = '../avatol_bat/cache_old/';
+cachedir = './cache/';
 if ~exist(cachedir,'dir')
   mkdir(cachedir);
 end

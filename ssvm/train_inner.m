@@ -67,9 +67,9 @@ for i = 1:length(pos)
   labels{i}.bbox = bbox;
   
   % DEBUG
-  labels{i}.nodes = ones(1,length(model.pa));
-  labels{i}.edges = ones(1,length(model.pa)-1);
-  patterns{i}.im = im;
+  %labels{i}.nodes = ones(1,length(model.pa));
+  %labels{i}.edges = ones(1,length(model.pa)-1);
+  %patterns{i}.im = im;
 end
 
 components = modelcomponents(model,pyra);
@@ -80,10 +80,10 @@ param = [];
 param.patterns  = patterns;
 param.labels    = labels; 
 param.lossFn    = @detect_loss;
-% param.oracleFn  = @detect_oracle;
-param.oracleFn  = @rpm_oracle2;
-% param.featureFn = @detect_featuremap;
-param.featureFn = @rpm_featuremap2;
+param.oracleFn  = @detect_oracle;
+% param.oracleFn  = @rpm_oracle2;
+param.featureFn = @detect_featuremap;
+% param.featureFn = @rpm_featuremap2;
 param.parts     = parts;
 param.warp      = warp;
 param.len       = len;

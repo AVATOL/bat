@@ -1,13 +1,18 @@
-function Species = demo_config(prefix)
+function Species = demo_config(prefix, input_folder, image_folder, anno_folder)
 %
+
+if nargin < 2
+    input_folder = 'data/vent_small/';
+end
 
 Species = {};
 
 if (strcmp(prefix,'Artibeus'))
     % Artibeus
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'A';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 13;
     Species.bb_const1 = 0.8;
@@ -21,9 +26,10 @@ if (strcmp(prefix,'Artibeus'))
     Species.part_mask = logical([1 1 1 1 1 1 1 1 1 1 1 1 1]);
 elseif(strcmp(prefix,'Noctilio'))
     % Noctilio
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'N';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 11;
     Species.bb_const1 = 0.8;
@@ -37,9 +43,10 @@ elseif(strcmp(prefix,'Noctilio'))
     Species.part_mask = logical([1 1 1 0 1 1 1 1 1 0 1 1 1]);
 elseif(strcmp(prefix,'Trachops'))
     % Trachops
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'T';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 13;
     Species.bb_const1 = 0.8;
@@ -53,9 +60,10 @@ elseif(strcmp(prefix,'Trachops'))
     Species.part_mask = logical([1 1 1 1 1 1 1 1 1 1 1 1 1]);
 elseif(strcmp(prefix,'Molossus'))
     % Noctilio
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'M1';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 11;
     Species.bb_const1 = 0.8;
@@ -69,9 +77,10 @@ elseif(strcmp(prefix,'Molossus'))
     Species.part_mask = logical([1 1 1 0 1 1 1 1 1 0 1 1 1]);
 elseif(strcmp(prefix,'Mormoops'))
     % Trachops
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'M2';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 13;
     Species.bb_const1 = 1.0;
@@ -85,9 +94,10 @@ elseif(strcmp(prefix,'Mormoops'))
     Species.part_mask = logical([1 1 1 1 1 1 1 1 1 1 1 1 1]);
 elseif(strcmp(prefix,'Saccopteryx'))
     % Trachops
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'S';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 11;
     Species.bb_const1 = 0.8;
@@ -101,9 +111,10 @@ elseif(strcmp(prefix,'Saccopteryx'))
     Species.part_mask = logical([1 0 1 1 1 1 1 0 1 1 1 1 1]);
 elseif(strcmp(prefix,'Glossophaga'))
     % Trachops
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'G';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 13;
     Species.bb_const1 = 0.8;
@@ -117,9 +128,10 @@ elseif(strcmp(prefix,'Glossophaga'))
     Species.part_mask = logical([1 1 1 1 1 1 1 1 1 1 1 1 1]);
 elseif(strcmp(prefix,'Desmodus'))
     % Trachops
-    Species.rt_dir = 'data/vent_small/';
+    Species.rt_dir = input_folder;
     Species.prefix = 'D';
-    Species.data_dir = [Species.rt_dir, Species.prefix, '/'];
+    Species.data_dir = fullfile(input_folder, image_folder, Species.prefix, '/');
+    Species.anno_dir = fullfile(input_folder, anno_folder, Species.prefix, '/');
     Species.num_train_data = 8;
     Species.num_parts = 9;
     Species.bb_const1 = 0.8;
