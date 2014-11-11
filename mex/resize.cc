@@ -33,7 +33,8 @@ void resize1dtran(double *src, int sheight, double *dst, int dheight,
   // we cache the interpolation values since they can be 
   // shared among different columns
   int len = (int)ceil(dheight*invscale) + 2*dheight;
-  alphainfo ofs[len];
+  // alphainfo ofs[len];
+  alphainfo* ofs = new alphainfo[len];
   int k = 0;
   for (int dy = 0; dy < dheight; dy++) {
     double fsy1 = dy * invscale;
@@ -66,7 +67,7 @@ void resize1dtran(double *src, int sheight, double *dst, int dheight,
   }
 
   // resize each column of each color channel
-  bzero(dst, chan*width*dheight*sizeof(double));
+  memset(dst, 0, chan*width*dheight*sizeof(double));
   for (int c = 0; c < chan; c++) {
     for (int x = 0; x < width; x++) {
       double *s = src + c*width*sheight + x*sheight;

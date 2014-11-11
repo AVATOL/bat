@@ -20,7 +20,7 @@ struct thread_data {
 };
 
 // convolve A and B
-void *process(void *thread_arg) {
+void process(void *thread_arg) {
   thread_data *args = (thread_data *)thread_arg;
   double *A = args->A;
   double *B = args->B;

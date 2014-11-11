@@ -11,7 +11,7 @@
 void reduce1dtran(double *src, int sheight, double *dst, int dheight, 
 		  int width, int chan) {
   // resize each column of each color channel
-  bzero(dst, chan*width*dheight*sizeof(double));
+  memset(dst, 0, chan*width*dheight*sizeof(double));
   int y;
   double *s, *d;
 

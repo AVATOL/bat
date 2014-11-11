@@ -3,6 +3,8 @@
 #include <sys/types.h>
 #include "mex.h"
 
+typedef int int32_t;
+
 /*
  * shiftdt.cc
  * Generalized distance transforms based on Felzenswalb and Huttenlocher.
