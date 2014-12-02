@@ -1,4 +1,4 @@
-function model = trainmodel_ssvm(name,pos,K,pa,sbin,tsize,kk,kkk,fix_def)
+function model = trainmodel_ssvm(name,pos,K,pa,sbin,tsize,kk,kkk,fix_def,def_y,def_x)
 
 if nargin < 6
   tsize = [];
@@ -14,7 +14,7 @@ delete(file);
 diary(file);
 
 %% initialization
-model = initmodel(pos,sbin,tsize);
+model = initmodel(pos,sbin,tsize,def_y,def_x);
 def = data_def(pos,model);
 idx = clusterparts(def,K,pa); % each part in each example has a cluster label
 
@@ -33,7 +33,7 @@ for p = 1:length(pa)
         spos(n).x2 = spos(n).x2(p);
         spos(n).y2 = spos(n).y2(p);
       end
-      model = initmodel(spos,sbin,tsize);
+      model = initmodel(spos,sbin,tsize,def_y,def_x);
       warp = 1; debug = 0;
       tic
       [models{k},progress] = train_inner(cls,model,spos,warp,0,fix_def,debug);
@@ -66,6 +66,7 @@ catch
 		end
   end
   warp = 0; debug = 0;
+  model.im_sz = [def_y, def_x];
   tic
   model = train_inner(cls,model,pos,warp,kk,fix_def,debug);
   fprintf('final1 model trained in %.2fs.\n', toc);
@@ -88,6 +89,7 @@ catch
     pos = rmfield(pos,'mix');
   end
   warp = 0; debug = 0;
+  model.im_sz = [def_y, def_x];
   tic
   model = train_inner(cls,model,pos,warp,kkk,fix_def,debug);
   fprintf('final model trained in %.2fs.\n', toc);

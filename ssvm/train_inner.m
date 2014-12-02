@@ -56,6 +56,11 @@ for i = 1:length(pos)
   end
   
   im = imread(pos(i).im);
+  [sy,sx] = size(im);
+  if ~all([sy,sx] == model.im_sz)
+      im = imresize(im, model.im_sz);
+  end
+  
   bbox = [pos(i).x1' pos(i).y1' pos(i).x2' pos(i).y2'];
   if warp
     %[im, bbox] = cropposwarp(im, bbox); % NOTE: for speeding up training, may hurt performance

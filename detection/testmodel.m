@@ -12,6 +12,10 @@ globals;
   for i = 1:length(test)
     fprintf([name ': testing: %d/%d\n'],i,length(test));
     im = imread(test(i).im);
+    [sy,sx] = size(im);
+    if ~all([sy,sx] == model.im_sz)
+        im = imresize(im, model.im_sz);
+    end
     
     if nargout >= 2
         [box,pscore] = detect_fast(im,model,model.thresh);

@@ -1,6 +1,6 @@
-function model = initmodel(pos,sbin,tsize,initPartID)
+function model = initmodel(pos,sbin,tsize,def_y,def_x,initPartID)
 
-if nargin < 4
+if nargin < 6
     initPartID = 1;
 end
 
@@ -57,4 +57,5 @@ model.components{1} = c;
 model.interval = 10;
 model.maxsize = tsize(1:2);
 model.len = 1+prod(tsize);
+model.im_sz = [def_y, def_x];
 
