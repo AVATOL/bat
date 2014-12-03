@@ -76,17 +76,20 @@ while 1
         train(k).im = strs{2};
         train(k).left_parts = -1.*ones(length(full_parts), 2);
         train(k).right_parts = -1.*ones(length(full_parts), 2);
-        [~,mid] = fileparts(strs{5}); mid = strsplit(mid, '_'); mid = mid{2}; % DEBUG
-        train(k).mid = mid; 
+        %[~,mid] = fileparts(strs{5}); mid = strsplit(mid, '_'); mid = mid{2}; % DEBUG
+        [~,tfname] = fileparts(strs{2});
+        tfname = strsplit(tfname, '_');
+        tfname = lower(tfname{1});
+        train(k).mid = tfname; 
         train(k).tid = strs{end-1}; 
         k = k + 1;
     elseif strcmp(strs{1},'image_to_score')
         test(r).im = [rt_dir strs{2}];
-        test(k).tid = strs{end-1};
+        test(r).tid = strs{end};
         [~,tfname] = fileparts(strs{2});
         tfname = strsplit(tfname, '_');
-        tfname = tfname{1};
-        test(k).mid = tfname;
+        tfname = lower(tfname{1});
+        test(r).mid = tfname;
         r = r + 1;
     else
         error('Neither train image or test image!');
