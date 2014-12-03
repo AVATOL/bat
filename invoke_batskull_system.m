@@ -12,6 +12,10 @@ end
 input_folder = strrep(input_folder, '\', '/');
 output_folder = strrep(output_folder, '\', '/');
 detection_results_folder = strrep(detection_results_folder, '\', '/');
+
+delete([detection_results_folder '/*']);
+delete([output_folder '/*']);
+
 % get data
 [trainX testX config] = avatol_config([list_of_characters{:}], input_folder);
 
@@ -27,12 +31,14 @@ detection_results_folder = strrep(detection_results_folder, '\', '/');
 part_mask = config.part_mask(2:(length(config.part_mask)-1)/2+1);
 full_parts = config.full_parts;
 full_part_names = config.full_part_names;
-for i = 1:length(trainX) % DEBUG with trainX, should be testX
+for i = 1:length(testX) % DEBUG with trainX, should be testX
     %ti = mod(i,length(trainX));
     ti = i;
     %point = trainX(ti).point;
-    left_parts = trainX(ti).left_parts;
-    right_parts = trainX(ti).right_parts;
+    %left_parts = trainX(ti).left_parts;
+    %right_parts = trainX(ti).right_parts;
+    left_parts = zeros(sum(part_mask),2);
+    right_parts = zeros(sum(part_mask),2);
     
     assert(sum(part_mask) == length(left_parts));
 
@@ -41,8 +47,8 @@ for i = 1:length(trainX) % DEBUG with trainX, should be testX
         if ~part_mask(k)
             continue
         end
-        [~,im] = fileparts(trainX(ti).im); % DEBUG with trainX, should be testX
-        fp = fopen([detection_results_folder '/' full_parts{k} '_' trainX(ti).mid, '.txt'], 'w');
+        [~,im] = fileparts(testX(ti).im); % DEBUG with trainX, should be testX
+        fp = fopen([detection_results_folder '/' full_parts{k} '_' testX(ti).mid, '.txt'], 'w');
         ss = randi(2,1); 
         sid = config.characters(k).states(ss).id;
         snam = config.characters(k).states(ss).name;
@@ -64,10 +70,10 @@ for k = 1:length(full_parts)
     end
 
     fp = fopen([output_folder '/' 'sorted_output_data_' full_parts{k} '_' full_part_names{k} '.txt'], 'w');
-    for i = 1:length(trainX) % DEBUG with trainX, should be testX
-        det_txt = [detection_results_folder '/' full_parts{k} '_' trainX(i).mid, '.txt'];
+    for i = 1:length(testX) % DEBUG with trainX, should be testX
+        det_txt = [detection_results_folder '/' full_parts{k} '_' testX(i).mid, '.txt'];
         fprintf(fp, 'image_scored|%s|%s|%s|%s|%s|%s|%s\n', ...
-            trainX(i).im, full_parts{k}, full_part_names{k}, det_txt, trainX(i).tid, '1', num2str(0.9));
+            testX(i).im, full_parts{k}, full_part_names{k}, det_txt, testX(i).tid, '1', num2str(0.9));
     end
     fclose(fp);
 end

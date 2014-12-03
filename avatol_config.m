@@ -82,6 +82,11 @@ while 1
         k = k + 1;
     elseif strcmp(strs{1},'image_to_score')
         test(r).im = [rt_dir strs{2}];
+        test(k).tid = strs{end-1};
+        [~,tfname] = fileparts(strs{2});
+        tfname = strsplit(tfname, '_');
+        tfname = tfname{1};
+        test(k).mid = tfname;
         r = r + 1;
     else
         error('Neither train image or test image!');
@@ -120,6 +125,11 @@ for i = 1:length(full_parts)
 
             fann = fopen([rt_dir anno], 'r');
             
+            if fann < 0
+                fclose(fann);
+                error('help!')
+            end
+            
             % left
             tann = fgetl(fann);
             sann = strsplit(tann, ':');
@@ -127,6 +137,7 @@ for i = 1:length(full_parts)
             train(tim).left_parts(i,1) = str2double(sxy{1});
             train(tim).left_parts(i,2) = str2double(sxy{2});
 
+            fclose(fann);
             train(tim).right_parts = train(tim).left_parts; continue % DEBUG
             
             % right
@@ -136,7 +147,7 @@ for i = 1:length(full_parts)
             train(tim).right_parts(i,1) = str2double(sxy{1});
             train(tim).right_parts(i,2) = str2double(sxy{2});
                 
-            fclose(fann);
+            %fclose(fann);
         elseif strcmp(strs{1},'image_to_score')
             
         else
