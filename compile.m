@@ -38,11 +38,11 @@ if isunix()
   % 1) multithreaded convolution using blas
   %files{end+1} = '-o fconv -lmwblas fconvblas.cc';
   % 2) mulththreaded convolution without blas
-  files{end+1} = '-o fconv fconvMT.cc';
+  files{end+1} = '-output fconv fconvMT.cc';
   % 3) basic convolution, very compatible
   % files{end+1} = '-o fconv fconv.cc'
 elseif ispc()
-  files{end+1} = '-o fconv fconv.cc';
+  files{end+1} = '-output fconv fconv.cc';
 end
 
 for n = 1:length(files)
