@@ -92,8 +92,9 @@ param.overlap1   = overlap / 2;
 param.thresh    = 0;
 param.latent    = ~warp;
 param.fix_def   = fix_def;
+param.kstart    = kk;
 
-[model, progress] = solverSSG(model, param, options, kk);
+[model, progress] = solverSSG(model, param, options);
 model = vec2model(model.w, model);
 
 % TODO: set model.thresh by w^T x

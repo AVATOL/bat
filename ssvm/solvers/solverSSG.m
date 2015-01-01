@@ -1,4 +1,4 @@
-function [model, progress] = solverSSG(model, param, options, kk)
+function [model, progress] = solverSSG(model, param, options)
 % [model, progress] = solverSSG(param, options)
 %
 % Solves the structured support vector machine (SVM) using stochastic 
@@ -166,7 +166,7 @@ end
 
 % logging
 %k=0; % same k as in paper
-k = kk;
+k = param.kstart;
 if (options.debug_multiplier == 0)
     debug_iter = n + k;
     options.debug_multiplier = 100;
