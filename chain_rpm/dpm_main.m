@@ -11,6 +11,7 @@ params.interval   = 10;
 params.tsize      = [5 5 32];
 params.maxsize    = [5 5];
 params.boxsize    = 40;
+params.cachedir   = 'cache/';
 % modify below for diff stages
 params.len        = 0; 
 params.kstart     = 1;
@@ -18,9 +19,9 @@ params.fix_def    = 0;
 params.overlap    = 0.5;
 params.thresh     = 0;
 params.presence_w = 0;
-% path
-params.cachedir   = 'cache/';
+% control flags
 params.show_data   = 0;
+params.test_in_train = 0;
 
 %% ssvm params 
 options = [];
@@ -36,3 +37,5 @@ options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% training
 model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+%vis_model(model);
+

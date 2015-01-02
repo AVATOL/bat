@@ -55,13 +55,14 @@ for p = 1:num_parts
         end
 
         % DEBUG code
-        %visualizemodel(models{1})
-        %norm(models{1}.w,2)
-        %im = imread(samples(8).im);
-        %[boxes] = detect_fast(im, models{1}, 0);
-        %boxes = nms(boxes,0.3);
-        %showboxes(im,boxes(1,:),{'g'})
-        %pause;
+        if params.test_in_train
+            vis_model(model);
+            fprintf('norm(w) = %f\n', norm(model.w,2));
+            im = imread(subsamps(1).im);
+            [boxes] = dpm_test(params, model, im);
+            figure; showboxes(im,boxes(1,:),{'g'});
+            pause;
+        end
     end % num_taxa
 end % num_parts
 
