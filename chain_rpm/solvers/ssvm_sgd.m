@@ -50,6 +50,7 @@ tic();
 %% Main loop 
 for p = 1:options.num_passes
 	fprintf('>');
+    if mod(p,50) == 0; fprintf('\n'); end;
 
     perm = [];
     if (isequal(options.sample, 'perm'))

@@ -31,8 +31,8 @@ for i = 1:size(model.edge,1)
         end
         x = model.edge(i,j,typ);
         s = size(x.w);
-        j = x.i:x.i+prod(s)-1;
-        model.edge(i,j,typ).w = reshape(w(j),s);
+        range = x.i:x.i+prod(s)-1;
+        model.edge(i,j,typ).w = reshape(w(range),s);
     end
 end
 

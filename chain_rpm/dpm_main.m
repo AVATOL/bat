@@ -1,6 +1,7 @@
 function ret = dpm_main()
 % TODO: invoke, input, output 
 
+close all
 setup_path
 
 %% model params
@@ -21,7 +22,7 @@ params.thresh     = 0;
 params.presence_w = 0;
 % control flags
 params.show_data   = 0;
-params.test_in_train = 0;
+params.test_in_train = 1;
 
 %% ssvm params 
 options = [];
@@ -37,5 +38,5 @@ options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% training
 model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
-%vis_model(model);
+
 

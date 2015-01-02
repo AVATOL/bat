@@ -6,9 +6,9 @@ params.num_parts = 1;
 params.len = 1+prod(params.tsize);
 model = init_model(params);
 model.parent = 0;
-model.len = 0;
+model.len = 0; % NOTE: important before add_factors
 model.num_parts = 1;
-model = add_factors(model, samples, params);
+model = add_factors(params, model, 'node', []);
 
 %% patterns and labels
 if params.warp

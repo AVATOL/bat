@@ -28,8 +28,8 @@ for i = 1:size(model.edge,1)
             continue
         end
         x = model.edge(i,j,typ);
-        j = x.i:x.i+numel(x.w)-1;
-        w(j) = x.w;
+        range = x.i:x.i+numel(x.w)-1;
+        w(range) = x.w;
     end
 end
 

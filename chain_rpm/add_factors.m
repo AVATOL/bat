@@ -1,40 +1,91 @@
-function model = add_factors(model, trains, params)
+function model = add_factors(params, model, varargin)
 % TODO: support adding with DAG
+
+pmodel = [];
+trains = [];
+is_node = 0;
+is_edge = 0;
+
+% parse argins
+assert(mod(nargin,2) == 0);
+for i = 1:2:nargin-2
+    if strcmp(varargin{i}, 'node')
+        is_node = 1;
+        pmodel = varargin{i+1}; % existing indiv model only for node
+    elseif strcmp(varargin{i}, 'edge')
+        is_edge = 1;
+        trains = varargin{i+1};
+        assert(~isempty(trains));
+    else
+        error('add_factors(): unknown adding type!\n');
+    end
+end
+
+if ~isfield(model,'len')
+    model.len = 0;
+end
 
 num_parts = model.num_parts;
 parent = model.parent;
 
-df = data_def(trains, params.maxsize);
+if is_node
+    if isempty(pmodel)
+        for k = 1:num_parts
+            model = add_node(model, params.tsize, k);
+        end
+    else % TODO: check pmodel
+        for k = 1:num_parts
+            if ~isempty(model.node(k).w)
+                continue
+            end
+            model = add_node(model, params.tsize, k, pmodel.bias, pmodel.node);
+        end
+    end
+end
 
-for k = 1:num_parts
-    model = add_node(model, params.tsize, k);
+if is_edge
+    df = data_def(trains, params.maxsize);
 
-    par = parent(k);
-    if par
-        model = add_edge(model, df, k, par);
+    for k = 1:num_parts
+        par = parent(k);
+        if par
+            model = add_edge(model, df, k, par);
+        end
     end
 end
 
 
 %% helper functions
-function model = add_node(model, tsize, k)
+function model = add_node(model, tsize, k, bias, node)
 
-model.bias(k).w = 0;
+if nargin < 4
+    bias.w = 0;
+    node.w = zeros(tsize);
+end
+
+model.bias(k).w = bias.w;
 model.bias(k).i = model.len + 1;
 model.len = model.len + 1;
 
-model.node(k).w = zeros(tsize);
+model.node(k).w = node.w;
 model.node(k).i = model.len + 1;
 model.len = model.len + prod(tsize);
 
-function model = add_edge(model, df, k, par)
 
-model.edge(k).w = [0.01 0 0.01 0];
-model.edge(k).i = model.len + 1;
-x = mean(df{k}(:,1) - df{par}(:,1));
-y = mean(df{k}(:,2) - df{par}(:,2));
-model.edge(k).anchor = round([x+1 y+1 0]);
+function model = add_edge(model, df, k, par, edge)
+
+if nargin < 5
+    edge.w = [0.01 0 0.01 0];
+    x = mean(df{k}(:,1) - df{par}(:,1));
+    y = mean(df{k}(:,2) - df{par}(:,2));
+    edge.anchor = round([x+1 y+1 0]);
+end
+
+model.edge(k,par).w = edge.w;
+model.edge(k,par).i = model.len + 1;
+model.edge(k,par).anchor = edge.anchor;
 model.len = model.len + 4;
+
 
 function deffeat = data_def(trains, maxsize)
 % get absolute trainsitions of parts with respect to HOG cell

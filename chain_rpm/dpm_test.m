@@ -44,7 +44,7 @@ for lvl = levels
         
         % collect msgs from ch: collect_k(y_k) = sum_l msg_lk(y_k)
         ch_k = find(parent == k);
-        for ci = 1:length(ch_k)
+        for ci = ch_k
             nodes(k).collect = nodes(k).collect + nodes(ci).msg;
         end
 
@@ -96,11 +96,11 @@ else
     starty = edge.starty;
     step = edge.step;
     
-    if defw(1,k) == 0
-        defw(1,k) = defw(1,k) + 1e-5;
+    if defw(1) == 0
+        defw(1) = defw(1) + 1e-5;
     end
-    if defw(3,k) == 0
-        defw(3,k) = defw(3,k) + 1e-5;
+    if defw(3) == 0
+        defw(3) = defw(3) + 1e-5;
     end
     
     % distance transform for pairwise potential
