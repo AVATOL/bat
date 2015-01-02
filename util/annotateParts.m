@@ -39,14 +39,15 @@ function annotateParts(directory, regex, replace, part_labels, train_files)
   ESC = 27;
   handle = figure;
   for n = 1:numpos
-    fprintf('-- annotating image %s --\n', posex(n).name);
-    partloc = zeros(numparts,2);
     [lead name ext] = fileparts(posex(n).name);
     if exist([directory '/' name 'parts.txt'], 'file')
-        fprintf('this image has been annotated!\n');
+        fprintf('%s has been annotated!\n', posex(n).name);
         continue
     end
     
+    fprintf('-- annotating image %s --\n', posex(n).name);
+    partloc = zeros(numparts,2);
+
     im = imread([directory '/' name ext]);
     hold off; imagesc(im); axis image; axis off; hold on;
     retry = 1;

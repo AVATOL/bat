@@ -1,4 +1,4 @@
-[nodes,edges,filters,resp] = parse_model(model,pyra)
+function [nodes,edges,filters,resp] = parse_model(model,pyra)
 
 nC = length(model);
 nodes = cell(nC,1);
@@ -10,7 +10,7 @@ for c = 1:nC % components
     [nV,nT] = size(nodes{c});
     for i = 1:nV
         for t = 1:nT
-            [sizy,sizx] = size(nodes{c}(i,t).w);
+            [sizy,sizx,~] = size(nodes{c}(i,t).w);
             nodes{c}(i,t).sizy  = sizy;
             nodes{c}(i,t).sizx  = sizx;
             nodes{c}(i,t).scale = 0;

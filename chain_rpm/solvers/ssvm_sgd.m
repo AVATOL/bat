@@ -41,7 +41,7 @@ if (isstruct(options.test_data) && isfield(options.test_data, 'patterns'))
     progress.test_error = [];
 end
 
-fprintf('running SSG on %d examples.\n');
+fprintf('running SSVM_SGD on %d examples.\n', n);
 
 rand('state',options.rand_seed);
 randn('state',options.rand_seed);

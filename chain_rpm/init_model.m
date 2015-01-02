@@ -10,9 +10,11 @@ model.node(num_parts).w = [];
 model.node(num_parts).i = [];
 model.bias(num_parts).w = [];
 model.bias(num_parts).i = [];
-model.len = num_parts*wdim ;
+%model.len = num_parts*wdim ;
 
 model.edge(num_parts,num_parts).w = [];
 model.edge(num_parts,num_parts).i = [];
-model.len = model.len + num_edges*4;
+%model.len = model.len + num_edges*4;
+
+model.len = 0;
 

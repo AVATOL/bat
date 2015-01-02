@@ -26,6 +26,9 @@ end
 % edge
 for i = 1:size(model.edge,1)
     for j = 1:size(model.edge,2)
+        if isempty(model.edge(i,j).w)
+            continue
+        end
         x = model.edge(i,j,typ);
         s = size(x.w);
         j = x.i:x.i+prod(s)-1;

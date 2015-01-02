@@ -12,7 +12,7 @@ if nargin > 3 && ~isempty(yi.bbox)
     latent = true; % do loss augmentation
     bbox = yi.bbox;
 end
-nV = params.num_nodes;
+nV = params.num_parts;
 overlap = params.overlap;
 pyra = xi.pyra;
 levels = 1:length(pyra.feat);
@@ -64,8 +64,11 @@ for lvl = levels
         par = parent(k); 
         if par == 0 % 1's par is 0, a virtual root
             ktop = [];
+            [nodes(k).msg,nodes(k).Ix,nodes(k).Iy] = deal(0);
         else
             ktop = edges(k,par);
+            [nodes(k).msg,nodes(k).Ix,nodes(k).Iy] = ...
+                deal(zeros(size(nodes(par).collect)));
         end
         
         % collect msgs from ch: collect_k(y_k) = sum_l msg_lk(y_k)
@@ -74,9 +77,8 @@ for lvl = levels
             nodes(k).collect = nodes(k).collect + nodes(ci).msg;
         end
 
-        % compute msg to par and keep backpointers
-        [Ny,Nx] = size(nodes(par).collect);
-        nodes(k) = compute_msg(nodes(k),ktop,Ny,Nx);
+        % compute nodes(k).msg to par and keep backpointers
+        nodes(k) = compute_msg(nodes(k),ktop);
     end % nV
 
     % 3) final collection for 0
@@ -86,7 +88,7 @@ for lvl = levels
     rx = nodes(ch_0).Ix;
 
     % 4) backtracking
-    [bb,fmaps{lvl}] = backtrack(rx,ry,lvl,nodes,edges,pyra,latent);
+    [bb,fmaps{lvl}] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,latent);
     boxes(lvl,:) = [bb lvl score];
 end % lvl
 
@@ -104,12 +106,12 @@ end
 
 
 %% helper functions
-function child = compute_msg(child,edge,Ny,Nx,eta)
+function child = compute_msg(child,edge,eta)
 % compute msg from child to parent 
 % m_ki(y_i) = max_{y_k} [ collect(y_k) + eta*unary(y_k) + pairwise(y_k,y_i) ]
 % ADD fields msg Iy Ix to child
 
-if nargin < 5
+if nargin < 3
     eta = 1;
 end
 
@@ -134,7 +136,8 @@ else
     end
     
     % distance transform for pairwise potential
-    [Ix,Iy,msg] = deal(zeros([Ny Nx]));
+    [Ny,Nx] = size(child.msg);
+    [Ix,Iy,msg] = deal(zeros([Ny,Nx]));
     [msg,Ix,Iy] = shiftdt(child.collect,...
         defw(1),defw(2),defw(3),defw(4),...
         startx,starty,Nx,Ny,step);
@@ -145,7 +148,7 @@ child.Ix  = Ix;
 child.Iy  = Iy;
 
 
-function [bb,fmap] = backtrack(rx,ry,lvl,nodes,edges,pyra,write)
+function [bb,fmap] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,write)
 % backtracking from root to leaves
 
 nV = length(nodes);
@@ -154,6 +157,7 @@ pady = pyra.pady;
 scale = pyra.scale(lvl);
 bb = zeros(nV,4);
 ptr = zeros(nV,2);
+fmap.blocks = [];
 
 for k = 1:nV
     par = parent(k);

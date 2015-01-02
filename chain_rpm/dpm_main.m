@@ -1,14 +1,15 @@
-function ret = chainrpm_main()
+function ret = dpm_main()
 % TODO: invoke, input, output 
 
 setup_path
 
 %% model params
 params = [];
+params.num_parts  = 6;
 params.sbin       = 8;
 params.interval   = 10;
-params.tsize      = [4 4 32];
-params.maxsize    = [4 4];
+params.tsize      = [5 5 32];
+params.maxsize    = [5 5];
 params.boxsize    = 40;
 % modify below for diff stages
 params.len        = 0; 
@@ -17,10 +18,9 @@ params.fix_def    = 0;
 params.overlap    = 0.5;
 params.thresh     = 0;
 params.presence_w = 0;
-params.num_parts  = 1;
 % path
 params.cachedir   = 'cache/';
-params.show_data   = 1;
+params.show_data   = 0;
 
 %% ssvm params 
 options = [];
@@ -31,5 +31,8 @@ options.do_line_search = 1;
 options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% data configuration
-taxa = taxon_config({'Artibeus','Noctilio'});
+[taxa, meta] = taxon_config({'Artibeus','Noctilio'});
 [trainset, testset] = data_sets(taxa, params);
+
+%% training
+model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);

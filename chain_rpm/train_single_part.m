@@ -1,4 +1,4 @@
-[model,progress] = train_single_part(name,samples,params,options)
+function [model,progress] = train_single_part(name,samples,params,options)
 %
 
 %% init model
@@ -6,8 +6,9 @@ params.num_parts = 1;
 params.len = 1+prod(params.tsize);
 model = init_model(params);
 model.parent = 0;
-model.len = params.len;
+model.len = 0;
 model.num_parts = 1;
+model = add_factors(model, samples, params);
 
 %% patterns and labels
 if params.warp
@@ -40,7 +41,7 @@ params.featureFn = @dpm_featmap;
 params.oracleFn  = @dpm_oracle;
 
 %% ssvm optimization
-[model, progress] = ssvm_sgd(patterns, labels, model, param, options);
+[model, progress] = ssvm_sgd(patterns, labels, model, params, options);
 model = wtomodel(model.w, model);
 % visualizemodel(model);
 

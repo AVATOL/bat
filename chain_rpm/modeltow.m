@@ -23,8 +23,11 @@ end
 
 % edge
 for i = 1:size(model.edge,1)
-    for p = 1:size(model.edge,2)
-        x = model.edge(i,p,typ);
+    for j = 1:size(model.edge,2)
+        if isempty(model.edge(i,j).w)
+            continue
+        end
+        x = model.edge(i,j,typ);
         j = x.i:x.i+numel(x.w)-1;
         w(j) = x.w;
     end
