@@ -33,8 +33,7 @@ options.do_line_search = 1;
 options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% data configuration
-[taxa, meta] = taxon_config({'Artibeus','Noctilio'});
-[trainset, testset] = data_sets(taxa, params);
+[trainset testset taxa meta] = demo_config('../data/vent_small/', params);
 
 %% training
 model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
