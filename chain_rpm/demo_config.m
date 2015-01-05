@@ -14,7 +14,9 @@ end
 meta.taxon_list = {'Artibeus','Noctilio','Trachops','Molossus',...
     'Mormoops','Saccopteryx','Glossophaga','Desmodus'};
 meta.part_list = {'I1','C','P4','P5','M1','M2'};
-meta.colorset = hsv(length(meta.part_list));
+colorset = hsv(length(meta.part_list));
+meta.part_color = mat2cell(colorset, ones(1,length(meta.part_list)), 3);
+meta.mask_color = meta.part_color(1:2);
 
 taxa(length(meta.taxon_list)).num_parts = 6;
 
@@ -81,8 +83,8 @@ for i = 1:length(meta.taxon_list)
     
     %taxa(i).part_color = mat2cell(meta.colorset(taxa(i).part_mask,:), ...
     %    ones(1,taxa(i).num_parts), 3);
-    taxa(i).part_color = mat2cell(meta.colorset, ...
-        ones(1,length(meta.part_list)), 3);
+    taxa(i).part_color = meta.part_color(taxa(i).part_mask);
+    taxa(i).mask_color = meta.mask_color(taxa(i).part_mask+1);
 end
 
 

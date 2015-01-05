@@ -133,7 +133,7 @@ for t = 1:num_taxa
             fprintf('norm(w) = %f\n', norm(model.w,2));
             im = imread(subsamps(1).im);
             [boxes] = dpm_test(params, model, im);
-            figure; showboxes(im,boxes(1,:),taxa(tid).part_color(taxa(tid).part_mask));
+            figure; showboxes(im,boxes(1,:),taxa(tid).part_color);
             pause;
         end
     end % try-catch
