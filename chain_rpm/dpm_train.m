@@ -20,13 +20,15 @@ fprintf('*=1=* train part filters independently\n');
 for p = 1:num_parts
     for t = 1:num_taxa
         cls = [name '_part_' part_list{p} '_taxon_' taxon_list{t}];
+        fprintf('(part %d, taxon %d): training %s...\n', p, t, cls);
         try
             load([cachedir cls]);
+            fprintf('%s trained already.\n', cls);
         catch
             % select samples for p and t
-            tidx = arrayfun(@(x) strcmp(x.taxon, taxon_list{t}), samples);
+            tidx = arrayfun(@(x) strcmp(x.taxon, taxon_list{t}), samples); % in t
             tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
-            pidx = arrayfun(@(x) taxa(tid).part_mask(p) == 1, samples);
+            pidx = arrayfun(@(x) taxa(tid).part_mask(p) == 1, samples); % has p
             subsamps = samples(tidx & pidx);
             
             if isempty(subsamps)
@@ -40,7 +42,7 @@ for p = 1:num_parts
                 subsamps(n).x2 = subsamps(n).x2(p);
                 subsamps(n).y2 = subsamps(n).y2(p);
                 assert(any([subsamps(n).x1, subsamps(n).y1,...
-                    subsamps(n).x2, subsamps(n).y2]));
+                    subsamps(n).x2, subsamps(n).y2])); % not all 0's
             end
 
             % set params 
@@ -48,7 +50,6 @@ for p = 1:num_parts
             params.latent    = 0;
 
             % training
-            fprintf('(part %d, taxon %d): training %s...\n', p, t, cls);
             tic
             [model,progress] = train_single_part(cls,subsamps,params,options);
             fprintf('%s trained in %.2fs.\n', cls, toc);
@@ -59,8 +60,8 @@ for p = 1:num_parts
                 fprintf('norm(w) = %f\n', norm(model.w,2));
                 im = imread(subsamps(1).im);
                 [boxes] = dpm_test(params, model, im);
-                figure; showboxes(im,boxes(1,:),{'g'});
-                pause;
+                figure(1000); showboxes(im,boxes(1,:),{'g'});
+                pause(1);
             end
         end % try-catch
     end % taxa
@@ -71,41 +72,47 @@ fprintf('--------------------------------------\n');
 fprintf('*=2=* train DPMs for each taxon\n');
 for t = 1:num_taxa
     cls = [name '_DPM_taxon_' taxon_list{t}];
+    fprintf('(taxon %d): DPM training %s...\n', t, cls);
     try
         load([cachedir cls]);
+        fprintf('%s trained already.\n', cls);
     catch
+        tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
+        pmsk = taxa(tid).part_mask;
+        
         % select samples for t
-        tidx = arrayfun(@(x) strcmp(x.taxon, taxon_list{t}), samples);
+        tidx = arrayfun(@(x) strcmp(x.taxon, taxon_list{t}), samples); % in t
         subsamps = samples(tidx);
         
         if isempty(subsamps)
             continue
         end
 
-        % keep only non-zero points/bboxes
+        % keep only existing points/bboxes
         for n = 1:length(subsamps)
-            % keep originals
-            subsamps(n).x1orig = subsamps(n).x1;
-            subsamps(n).y1orig = subsamps(n).y1;
-            subsamps(n).x2orig = subsamps(n).x2;
-            subsamps(n).y2orig = subsamps(n).y2;
-            subsamps(n).pointorig = subsamps(n).point;
-            % remove all-zero columns
-            bbox = [subsamps(n).x1;subsamps(n).y1;subsamps(n).x2;subsamps(n).y2];
-            bbox = bbox(:,any(bbox,1));
-            subsamps(n).x1 = bbox(1,:); 
-            subsamps(n).y1 = bbox(2,:);
-            subsamps(n).x2 = bbox(3,:);
-            subsamps(n).y2 = bbox(4,:);
-            % remove all-zero rows
-            subsamps(n).point = subsamps(n).point(any(subsamps(n).point,2),:);
+            subsamps(n).x1 = subsamps(n).x1(pmsk); 
+            subsamps(n).y1 = subsamps(n).y1(pmsk);
+            subsamps(n).x2 = subsamps(n).x2(pmsk);
+            subsamps(n).y2 = subsamps(n).y2(pmsk);
+            subsamps(n).point = subsamps(n).point(pmsk,:);
+        end
+        
+        % DEBUG code
+        if params.show_data
+            for i = 1:length(subsamps)
+                B = [subsamps(i).x1;subsamps(i).y1;subsamps(i).x2;subsamps(i).y2];
+                B = reshape(B,[4*taxa(tid).num_parts,1])';
+                A = imread(subsamps(i).im);
+                figure(1001); showboxes(A,B,taxa(tid).part_color);
+                pause(1);
+            end
+            %close all;
         end
 
         % load indiv models belong to t
-        tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
         part_models = {};
         for p = 1:num_parts
-            if taxa(tid).part_mask(p) == 0
+            if pmsk(p) == 0
                 continue
             end
             
@@ -122,7 +129,6 @@ for t = 1:num_taxa
         params.kstart    = 100;
 
         % training
-        fprintf('(taxon %d): DPM training %s...\n', t, cls);
         tic
         [model,progress] = train_taxon_dpm(cls,taxa(tid),subsamps,part_models,params,options);
         fprintf('%s trained in %.2fs.\n', cls, toc);
@@ -133,8 +139,9 @@ for t = 1:num_taxa
             fprintf('norm(w) = %f\n', norm(model.w,2));
             im = imread(subsamps(1).im);
             [boxes] = dpm_test(params, model, im);
-            figure; showboxes(im,boxes(1,:),taxa(tid).part_color);
-            pause;
+            figure(1000); showboxes(im,boxes(1,:),taxa(tid).part_color);
+            pause(1);
+            %close all;
         end
     end % try-catch
 end % taxa

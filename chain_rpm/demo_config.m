@@ -1,7 +1,17 @@
 function [train test taxa meta] = demo_config(rt_dir, params)
 
+if exist([params.cachedir 'demo_config.mat'], 'file')
+    fprintf('train, test, taxa, meta are loading from demo_config.mat.\n');
+    load([params.cachedir 'demo_config.mat']);
+    return
+end
+
+fprintf('calculating train, test, taxa, meta from scratch.\n');
+
 [taxa meta] = taxon_config(rt_dir);
 [train, test] = data_sets(taxa, params);
+
+save([params.cachedir 'demo_config.mat'], 'train', 'test', 'taxa', 'meta');
 
 
 function [taxa,meta] = taxon_config(rt_dir)
@@ -111,7 +121,8 @@ for taxon = taxa
     annotateParts(taxon.data_dir, 'png', '', taxon.part_name, train_files);
     
     % prepare data sets
-    [trains, tests] = prepare_sets(taxon.name, taxon.data_dir, train_files, test_files);
+    [trains, tests] = prepare_sets(taxon.name, taxon.data_dir, taxon.part_mask, ...
+        train_files, test_files);
     trains = temp_process_points(trains, taxon); % TODO: redo anno 
     
     % convert annotated points to bounding boxes
@@ -137,7 +148,7 @@ end
 
 
 %% helper functions
-function [train test] = prepare_sets(tname, directory, train_files, test_files)
+function [train test] = prepare_sets(tname, directory, pmsk, train_files, test_files)
 % 
 
 [train test] = deal([]);
@@ -151,11 +162,13 @@ for n = 1:numel(train_files)
     [lead name ext] = fileparts(train_files(n).name);
     train(n).point  = dlmread([directory '/' name 'parts.txt']);
     train(n).taxon  = tname;
+    train(n).part_mask  = pmsk;
 end
 
 for n = 1:numel(test_files)
     test(n).im      = [directory '/' test_files(n).name];
     test(n).taxon   = tname;
+    test(n).part_mask  = pmsk;
 end
 
 function train = temp_process_points(train, taxon)

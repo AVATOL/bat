@@ -17,6 +17,7 @@ overlap = params.overlap;
 pyra = xi.pyra;
 levels = 1:length(pyra.feat);
 boxes = zeros(length(levels),nV*4+2);
+boxes(:,end) = -inf;
 fmaps = cell(1,length(levels)); % feature_maps
 
 %% parse model
@@ -75,6 +76,12 @@ for lvl = levels
         ch_k = find(parent == k);
         for ci = ch_k
             nodes(k).collect = nodes(k).collect + nodes(ci).msg;
+        end
+        
+        % DEBUG code
+        if params.show_interm
+            figure(1005); imagesc(nodes(k).collect);
+            title(sprintf('nodes(%d).collect', k));
         end
 
         % compute nodes(k).msg to par and keep backpointers

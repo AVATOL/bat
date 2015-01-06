@@ -1,6 +1,14 @@
 function [train, test, taxa, meta] = avatol_config(input_folder, params)
 %
 
+if exist([params.cachedir 'avatol_config.mat'], 'file')
+    fprintf('train, test, taxa, meta are loading from avatol_config.mat.\n');
+    load([params.cachedir 'avatol_config.mat']);
+    return
+end
+
+fprintf('calculating train, test, taxa, meta from scratch.\n');
+
 % init
 [train test] = deal([]);
 meta.chars = []; meta.taxa = []; meta.states = []; meta.views = [];
@@ -153,7 +161,6 @@ tind = arrayfun(@(x) any(x.nlabels > 2), test);
 test(tind) = [];
 
 %*** black list (incorrect annotations)
-%blacklist = {'media\M283952.jpg', 'media\M283672.jpg'};
 blacklist = {'media\M283606.jpg', 'media\M283568.jpg'};
 tind = arrayfun(@(x) ismember(x.im, blacklist), train);
 train(tind) = [];
@@ -231,7 +238,10 @@ test = rmfield(test, 'setid');
 assert(length(train) + length(test) == length(train_test));
 clear train_test
 
-%% visualize training data
+%% save
+save([params.cachedir 'avatol_config.mat'], 'train', 'test', 'taxa', 'meta');
+
+%% vis
 if (params.show_data == 1)
     for t = 1:length(taxa)
         tind = arrayfun(@(x) strcmp(x.tid, meta.taxa(t).id), train);
@@ -243,7 +253,6 @@ if (params.show_data == 1)
             title(sprintf('%s: %d -- %s | bbsz = %d',meta.taxa(t).name, ...
                 i,train(i).im(end-10:end),train(i).x2(1) - train(i).x1(1)));
             pause;
-            break
         end
     end
 end

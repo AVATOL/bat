@@ -83,7 +83,9 @@ for p = 1:options.num_passes
         %
         % [note that lambda*w_s is subgradient of 1/n*H_i(w) ]
         % psi_i(y) := phi(x_i,y_i) - phi(x_i, y)
-        psi_i = phi(params, model, patterns{i}, labels{i})-phi(params, model, patterns{i}, ystar_i);
+        phi_gt = phi(params, model, patterns{i}, labels{i});
+        phi_y  = phi(params, model, patterns{i}, ystar_i);
+        psi_i = phi_gt - phi_y;
         w_s = 1/(n*lambda) * psi_i;
         
         % 4) step-size gamma:
