@@ -36,6 +36,6 @@ options.debug = 0; % for displaying more info (makes code about 3x slower)
 [trainset testset taxa meta] = demo_config('../data/vent_small/', params);
 
 %% training
-model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 

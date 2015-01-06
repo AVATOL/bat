@@ -1,4 +1,4 @@
-function model = dpm_train(part_list, taxon_list, taxa, samples, params, options)
+function dpm_train(part_list, taxon_list, taxa, samples, params, options)
 %
 
 name = [part_list{:}];
@@ -59,7 +59,7 @@ for p = 1:num_parts
                 vis_model(model);
                 fprintf('norm(w) = %f\n', norm(model.w,2));
                 im = imread(subsamps(1).im);
-                [boxes] = dpm_test(params, model, im);
+                [boxes] = test_taxon_dpm(params, model, im);
                 figure(1000); showboxes(im,boxes(1,:),{'g'});
                 pause(1);
             end
@@ -104,7 +104,8 @@ for t = 1:num_taxa
                 B = reshape(B,[4*taxa(tid).num_parts,1])';
                 A = imread(subsamps(i).im);
                 figure(1001); showboxes(A,B,taxa(tid).part_color);
-                pause(1);
+                title(sprintf('%s, %s',subsamps(i).taxon, subsamps(i).id));
+                pause(0.5);
             end
             %close all;
         end
@@ -136,9 +137,8 @@ for t = 1:num_taxa
         % DEBUG code
         if params.test_in_train
             vis_model(model);
-            fprintf('norm(w) = %f\n', norm(model.w,2));
             im = imread(subsamps(1).im);
-            [boxes] = dpm_test(params, model, im);
+            [boxes] = test_taxon_dpm(params, model, im);
             figure(1000); showboxes(im,boxes(1,:),taxa(tid).part_color);
             pause(1);
             %close all;

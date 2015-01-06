@@ -78,14 +78,15 @@ for lvl = levels
             nodes(k).collect = nodes(k).collect + nodes(ci).msg;
         end
         
+        % compute nodes(k).msg to par and keep backpointers
+        nodes(k) = compute_msg(nodes(k),ktop);
+        
         % DEBUG code
         if params.show_interm
             figure(1005); imagesc(nodes(k).collect);
             title(sprintf('nodes(%d).collect', k));
+            drawnow;
         end
-
-        % compute nodes(k).msg to par and keep backpointers
-        nodes(k) = compute_msg(nodes(k),ktop);
     end % nV
 
     % 3) final collection for 0

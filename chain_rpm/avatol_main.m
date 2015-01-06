@@ -33,7 +33,7 @@ params.presence_w = 0;
 % control flags
 params.show_data   = 1;
 params.test_in_train = 1;
-params.show_interm = 1;
+params.show_interm = 0;
 
 %% ssvm params 
 options = [];
@@ -48,7 +48,7 @@ input_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/input/
 [trainset testset taxa meta] = avatol_config(input_dir, params);
 
 %% training
-model = dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 ret = 1;
 

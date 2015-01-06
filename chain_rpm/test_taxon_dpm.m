@@ -1,4 +1,4 @@
-function boxes = dpm_test(params, model, im, overlap)
+function boxes = test_taxon_dpm(params, model, im, overlap)
 % 
 
 if nargin < 4

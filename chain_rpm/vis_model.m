@@ -1,8 +1,9 @@
 function vis_model(model)
 %
 
-figure; vis_templates(model);
-figure; vis_deformations(model);
+figure(1002); vis_templates(model);
+title(sprintf('norm(w) = %f\n', norm(model.w,2)));
+figure(1003); vis_deformations(model);
 
 
 function vis_templates(model)
