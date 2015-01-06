@@ -77,6 +77,7 @@ for n = 1:length(train)
     train(n).part_mask = zeros(1,length(meta.chars));
     train(n).nlabels = zeros(length(meta.chars),1); 
     train(n).bb_ratio = 0;
+    train(n).sid = cell(length(meta.chars),1);
 end
 
 for n = 1:length(test)
@@ -84,6 +85,7 @@ for n = 1:length(test)
     test(n).part_mask = zeros(1,length(meta.chars));
     test(n).nlabels = zeros(length(meta.chars),1); 
     test(n).bb_ratio = 0;
+    test(n).sid = cell(length(meta.chars),1);
 end
 
 %% read input files -> train test (annotations)
@@ -115,7 +117,7 @@ for i = 1:n_parts
             sann = strsplit(tann, ':');
             sxy = strsplit(sann{1}, ',');
             train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
-            train(tim).sid = sid;
+            train(tim).sid{i} = sid;
             train(tim).tid = tid;
             train(tim).nlabels(i) = train(tim).nlabels(i) + 1; 
 
@@ -136,7 +138,7 @@ for i = 1:n_parts
             sxy = strsplit(sann{1}, ',');
             sid = sann{4};
             test(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,test(tim).im));
-            test(tim).sid = sid;
+            test(tim).sid{i} = sid;
             test(tim).tid = tid;
             test(tim).nlabels(i) = test(tim).nlabels(i) + 1; 
 

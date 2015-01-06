@@ -146,7 +146,11 @@ for t = 1:num_taxa
     end % try-catch
 end % taxa
 
-%% DPMs rooted at each node
-fprintf('--------------------------------------\n');
-fprintf('*=3=* train DPMs rooted at each node\n');
+% %% DPMs rooted at each node
+% fprintf('--------------------------------------\n');
+% fprintf('*=3=* train DPMs rooted at each node\n');
+
+%% find thresholds for each part (only unary score)
+
+
 

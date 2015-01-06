@@ -1,4 +1,4 @@
-function boxes = test_taxon_dpm(params, model, im, overlap)
+function [boxes,pscore] = test_taxon_dpm(params, model, im, overlap)
 % 
 
 if nargin < 4
@@ -13,6 +13,7 @@ pyra = hog_pyra(im, params);
 nV = model.num_parts;
 levels = 1:length(pyra.feat);
 boxes = zeros(length(levels),nV*4+2);
+pscores = zeros(length(levels),nV);
 
 %% parse model
 model = wtomodel(model.w, model); % update model.filter to do Inference
@@ -59,8 +60,9 @@ for lvl = levels
     rx = nodes(ch_0).Ix;
 
     % 4) backtracking
-    bb = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,0);
+    [bb,pscore] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,0);
     boxes(lvl,:) = [bb lvl score];
+    pscores(lvl,:) = pscore;
 end % lvl
 
 if all(boxes(:) == 0)
@@ -71,6 +73,7 @@ end
 boxes = nms(boxes, overlap);
 [~,sI] = sort(boxes(:,end),'descend');
 boxes = boxes(sI,:);
+pscore = pscores(sI,:);
 
 
 %% helper functions
@@ -116,7 +119,7 @@ child.Ix  = Ix;
 child.Iy  = Iy;
 
 
-function [bb,fmap] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,write)
+function [bb,pscore,fmap] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,write)
 % backtracking from root to leaves
 
 nV = length(nodes);
@@ -125,6 +128,7 @@ pady = pyra.pady;
 scale = pyra.scale(lvl);
 bb = zeros(nV,4);
 ptr = zeros(nV,2);
+pscore = zeros(1,nV);
 fmap.blocks = [];
 
 for k = 1:nV
@@ -146,6 +150,8 @@ for k = 1:nV
     x2  = x1 + sizx*scale - 1;
     y2  = y1 + sizy*scale - 1;
     bb(k,:) = [x1 y1 x2 y2];
+
+    pscore(k) = nodes(k).unary(ptr(k,2),ptr(k,1)); 
 
 	if write
         % bias
