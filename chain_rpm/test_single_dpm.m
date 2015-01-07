@@ -70,7 +70,7 @@ if all(boxes(:) == 0)
 end
 
 %% post-processing
-boxes = nms(boxes, overlap);
+%boxes = nms(boxes, overlap); % NO NEED
 [~,sI] = sort(boxes(:,end),'descend');
 boxes = boxes(sI,:);
 pscore = pscores(sI,:);
