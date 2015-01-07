@@ -9,6 +9,9 @@ end
 
 fprintf('calculating train, test, taxa, meta from scratch.\n');
 
+fsp = filesep;
+input_folder = strrep(input_folder, '\', fsp);
+
 % init
 [train test] = deal([]);
 meta.chars = []; meta.taxa = []; meta.states = []; meta.views = [];
