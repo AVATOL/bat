@@ -1,5 +1,5 @@
 function model = chainrpm_train(part_list, taxon_list, samples, params)
-%
+% TODO: chainrpm_oracle, latent ssvm for omis
 
 name = [part_list{:}];
 cachedir = params.cachedir;
@@ -59,8 +59,5 @@ end % num_parts
 return
 
 %% DPMs -- model.node,edge,parent
-model = initmodel(samples,sbin,tsize);
-def = data_def(samples,model);
-idx = clusterparts(def,K,pa); % each part in each example has a cluster label
 
 %% RPM -- model.node,edge,dag,parents,omis

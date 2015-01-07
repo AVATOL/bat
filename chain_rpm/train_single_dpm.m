@@ -1,9 +1,9 @@
-function [model,progress] = train_taxon_dpm(name,taxon,samples,part_models,params,options)
+function [model,progress] = train_single_dpm(name,parent,samples,part_models,params,options)
 %
 
 %% init model
 params.num_parts = length(part_models);
-model = merge_part_models(part_models, taxon.parent, samples, params);
+model = merge_part_models(part_models, parent, samples, params);
 params.len = model.len;
 
 %% patterns and labels

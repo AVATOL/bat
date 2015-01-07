@@ -1,4 +1,4 @@
-function [boxes,pscore] = test_taxon_dpm(params, model, im, overlap)
+function [boxes,pscore] = test_single_dpm(params, model, im, overlap)
 % 
 
 if nargin < 4

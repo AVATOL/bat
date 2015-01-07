@@ -1,5 +1,5 @@
 function ret = dpm_main()
-% TODO: invoke, input, output 
+% TODO: dpm_test, testset add gt points
 
 close all
 setup_path
@@ -33,7 +33,7 @@ options.do_line_search = 1;
 options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% data configuration
-[trainset testset taxa meta] = demo_config('../data/vent_small/', params);
+[trainset testset taxa meta] = dpm_config('../data/vent_small/', params);
 
 %% training
 dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);

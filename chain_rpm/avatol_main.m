@@ -44,15 +44,15 @@ options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% data configuration
 input_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/input/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+output_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/output/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/detection_results/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
 [trainset testset taxa meta] = avatol_config(input_dir, params);
 
 %% training
 dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 %% testing
-output_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/output/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
-det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/detection_results/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
-dpm_test(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
+avatol_test_unary(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
 
 ret = 1;
 

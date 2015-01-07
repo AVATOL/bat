@@ -59,7 +59,7 @@ for p = 1:num_parts
                 vis_model(model);
                 fprintf('norm(w) = %f\n', norm(model.w,2));
                 im = imread(subsamps(1).im);
-                [boxes] = test_taxon_dpm(params, model, im);
+                [boxes] = test_single_dpm(params, model, im);
                 figure(1000); showboxes(im,boxes(1,:),{'g'});
                 pause(1);
             end
@@ -131,14 +131,14 @@ for t = 1:num_taxa
 
         % training
         tic
-        [model,progress] = train_taxon_dpm(cls,taxa(tid),subsamps,part_models,params,options);
+        [model,progress] = train_single_dpm(cls,taxa(tid).parent,subsamps,part_models,params,options);
         fprintf('%s trained in %.2fs.\n', cls, toc);
 
         % DEBUG code
         if params.test_in_train
             vis_model(model);
             im = imread(subsamps(1).im);
-            [boxes] = test_taxon_dpm(params, model, im);
+            [boxes] = test_single_dpm(params, model, im);
             figure(1000); showboxes(im,boxes(1,:),taxa(tid).part_color);
             pause(1);
             %close all;

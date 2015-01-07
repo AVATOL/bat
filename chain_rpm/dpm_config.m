@@ -1,8 +1,8 @@
-function [train test taxa meta] = demo_config(rt_dir, params)
+function [train test taxa meta] = dpm_config(rt_dir, params)
 
-if exist([params.cachedir 'demo_config.mat'], 'file')
-    fprintf('train, test, taxa, meta are loading from demo_config.mat.\n');
-    load([params.cachedir 'demo_config.mat']);
+if exist([params.cachedir 'dpm_config.mat'], 'file')
+    fprintf('train, test, taxa, meta are loading from dpm_config.mat.\n');
+    load([params.cachedir 'dpm_config.mat']);
     return
 end
 
@@ -11,7 +11,7 @@ fprintf('calculating train, test, taxa, meta from scratch.\n');
 [taxa meta] = taxon_config(rt_dir);
 [train, test] = data_sets(taxa, params);
 
-save([params.cachedir 'demo_config.mat'], 'train', 'test', 'taxa', 'meta');
+save([params.cachedir 'dpm_config.mat'], 'train', 'test', 'taxa', 'meta');
 
 
 function [taxa,meta] = taxon_config(rt_dir)
