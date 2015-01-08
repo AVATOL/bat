@@ -1,8 +1,8 @@
-function [boxes,pscore] = test_single_dpm(params, model, im, overlap)
+function [boxes,pscore] = test_single_dpm(params, model, im, pAs, pBs)
 % 
 
 if nargin < 4
-    overlap = 0.3;
+    pAs = []; pBs = [];
 end
 
 if ischar(im)
@@ -70,10 +70,16 @@ if all(boxes(:) == 0)
 end
 
 %% post-processing
-%boxes = nms(boxes, overlap); % NO NEED
+
 [~,sI] = sort(boxes(:,end),'descend');
 boxes = boxes(sI,:);
 pscore = pscores(sI,:);
+
+if ~isempty(pAs) && ~isempty(pBs)
+    for i = 1:nV
+        pscore(:,i) = 1 ./ (1 + exp( pscore(:,i) .* pAs(i) + pBs(i) ) );
+    end
+end
 
 
 %% helper functions
