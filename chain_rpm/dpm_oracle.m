@@ -112,6 +112,9 @@ if latent
   label.fmap = fmaps{ii};
 end
 
+% DEBUG code
+% figure(1000); showboxes(xi.im, label.bbox, repmat({'g'}, nV, 1)); pause(0.5);
+
 
 %% helper functions
 function child = compute_msg(child,edge,eta)

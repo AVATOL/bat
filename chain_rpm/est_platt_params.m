@@ -1,12 +1,14 @@
-function [pA,pB] = est_platt_params(model, samples, params)
+function [pAs,pBs] = est_platt_params(model, samples, params)
 %
 
 nvsp = 5; % 5 times more neg than pos
 overlap = 0.3;
 sizx = params.tsize(1); sizy = params.tsize(2);
 nV = model.num_parts;
-pos_scores = [];
-neg_scores = [];
+pos_scores = cell(nV,1);
+neg_scores = cell(nV,1);
+pAs = zeros(nV,1);
+pBs = zeros(nV,1);
 
 for n = 1:length(samples)
     im = imread(samples(n).im);
@@ -27,17 +29,19 @@ for n = 1:length(samples)
             ovmask = testoverlap(sizx,sizy,pyra,lvl,bbox(k,:),overlap);
     
             tpos = unary(ovmask);
-            pos_scores = cat(1,pos_scores,tpos);
+            pos_scores{k} = cat(1,pos_scores{k},tpos);
             
             tneg = unary(~ovmask);
             %tneg = sort(tneg,'descend');
             perm = randperm(length(tneg));
             tneg = tneg(perm(1:length(tpos)*nvsp)); % randomly select negs
-            neg_scores = cat(1,neg_scores,tneg);
+            neg_scores{k} = cat(1,neg_scores{k},tneg);
         end % nV
     end
 end
 
-scores = [pos_scores; neg_scores]; 
-labels = [ones(length(pos_scores),1); -1.*ones(length(neg_scores),1)];
-[pA,pB] = platt_scaling(scores, labels);
+for k = 1:nV
+    scores = [pos_scores{k}; neg_scores{k}]; 
+    labels = [ones(length(pos_scores{k}),1); -1.*ones(length(neg_scores{k}),1)];
+    [pAs(k),pBs(k)] = platt_scaling(scores, labels);
+end

@@ -23,8 +23,8 @@ for i = 1:length(samples)
 end
 
 %% ssvm optimization
-options.lambda = 0.1;
-options.num_passes = 200;
+options.lambda = 1;
+options.num_passes = 100;
 
 [model, progress] = ssvm_sgd(patterns, labels, model, params, options);
 model = wtomodel(model.w, model);

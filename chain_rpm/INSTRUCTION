@@ -1,4 +1,8 @@
+Rules for file names:
 - avatol_*:  avatol demo with attribute classification
 - dpm_*: avatol demo with dpm scoring
 - chainrpm_*: chain rpm
-- others functions
+- others functions are core functions
+
+Count number of lines:
+- git ls-files | xargs wc -l

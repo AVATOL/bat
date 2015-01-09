@@ -1,5 +1,4 @@
 function avatol_test_unary(det_results, output_dir, part_list, taxon_list, taxa, meta, trains, tests, params)
-% TODO: check boxes(end) = pscore
 
 fsp = filesep;
 det_results = strrep(det_results, '\', fsp);
@@ -54,7 +53,7 @@ catch
         end
     end
 
-    save([cachedir 'dpm_test_single_thresholds.mat']);
+    save([cachedir 'dpm_test_single_thresholds.mat'], 'thresholds');
 end % try-catch
 
 %% testing

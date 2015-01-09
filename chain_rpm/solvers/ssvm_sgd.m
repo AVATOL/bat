@@ -83,6 +83,9 @@ for p = 1:options.num_passes
         %
         % [note that lambda*w_s is subgradient of 1/n*H_i(w) ]
         % psi_i(y) := phi(x_i,y_i) - phi(x_i, y)
+        
+        %labels{i}.level = ystar_i.level;
+        
         phi_gt = phi(params, model, patterns{i}, labels{i});
         phi_y  = phi(params, model, patterns{i}, ystar_i);
         psi_i = phi_gt - phi_y;

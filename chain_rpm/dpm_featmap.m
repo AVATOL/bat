@@ -9,6 +9,9 @@ function phi = dpm_featmap(params, model, x, y)
 %
 % OUTPUT:
 % phi = {bias_1, HOG_1, bias_2, HOG_2, ..., bias_P, HOG_P, def_2, ..., def_P}
+% 
+% TODO: y.level isn't in GT
+% TODO: (py,px) from center not left-upper corner of bbox
 
 num_parts = params.num_parts; % num_parts = 1 when single part
 len = params.len;

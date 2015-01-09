@@ -11,7 +11,7 @@ else
     if ischar(data)
         im = imread(data);
     end
-    pyra = hog_pyra(im, params);
+    pyra = hog_pyra(data, params);
 end
 
 nV = model.num_parts;
