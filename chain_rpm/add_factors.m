@@ -1,7 +1,7 @@
 function model = add_factors(params, model, varargin)
 % TODO: support adding with DAG
 
-pmodel = [];
+pmodels = [];
 trains = [];
 is_node = 0;
 is_edge = 0;
@@ -11,7 +11,7 @@ assert(mod(nargin,2) == 0);
 for i = 1:2:nargin-2
     if strcmp(varargin{i}, 'node')
         is_node = 1;
-        pmodel = varargin{i+1}; % existing indiv model only for node
+        pmodels = varargin{i+1}; % existing indiv model only for node
     elseif strcmp(varargin{i}, 'edge')
         is_edge = 1;
         trains = varargin{i+1};
@@ -29,16 +29,14 @@ num_parts = model.num_parts;
 parent = model.parent;
 
 if is_node
-    if isempty(pmodel)
+    if isempty(pmodels)
         for k = 1:num_parts
             model = add_node(model, params.tsize, k);
         end
-    else % TODO: check pmodel
+    else 
+        assert(length(pmodels) == num_parts);
         for k = 1:num_parts
-            if ~isempty(model.node(k).w)
-                continue
-            end
-            model = add_node(model, params.tsize, k, pmodel.bias, pmodel.node);
+            model = add_node(model, params.tsize, k, pmodels{k}.bias, pmodels{k}.node);
         end
     end
 end

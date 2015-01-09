@@ -22,11 +22,6 @@ for i = 1:length(samples)
     %patterns{i}.im = im;
 end
 
-%% additional for problem structure:
-params.lossFn    = @dpm_loss;
-params.featureFn = @dpm_featmap;
-params.oracleFn  = @dpm_oracle;
-
 %% ssvm optimization
 options.lambda = 0.1;
 options.num_passes = 200;

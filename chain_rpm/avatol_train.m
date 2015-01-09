@@ -1,4 +1,4 @@
-function dpm_train(part_list, taxon_list, taxa, samples, params, options)
+function avatol_train(part_list, taxon_list, taxa, samples, params, options)
 %
 
 name = [part_list{:}];
@@ -45,14 +45,19 @@ for p = 1:num_parts
                     subsamps(n).x2, subsamps(n).y2])); % not all 0's
             end
 
-            % set params 
+            % training warped
             params.warp      = 1;
             params.latent    = 0;
-
-            % training
             tic
             [model,progress] = train_single_part(cls,subsamps,params,options);
-            fprintf('%s trained in %.2fs.\n', cls, toc);
+            fprintf('warped_%s trained in %.2fs.\n', cls, toc);
+
+            % training latent
+            %params.warp      = 0;
+            %params.latent    = 1;
+            %tic
+            %[model,progress] = train_single_part(cls,subsamps,params,options);
+            %fprintf('%s trained in %.2fs.\n', cls, toc);
 
             % DEBUG code
             if params.test_in_train
@@ -107,7 +112,6 @@ for t = 1:num_taxa
                 title(sprintf('%s, %s',subsamps(i).taxon, subsamps(i).id));
                 pause(0.5);
             end
-            %close all;
         end
 
         % load indiv models belong to t
@@ -139,21 +143,12 @@ for t = 1:num_taxa
 
         % DEBUG code
         if params.test_in_train
-            vis_model(model);
+            vis_model(model, cls);
             im = imread(subsamps(1).im);
             [boxes] = test_single_dpm(params, model, im);
             figure(1000); showboxes(im,boxes(1,:),taxa(tid).part_color);
-            pause(1);
-            %close all;
+            export_fig([cls '_det_res.png']);
         end
     end % try-catch
 end % taxa
-
-% %% DPMs rooted at each node
-% fprintf('--------------------------------------\n');
-% fprintf('*=3=* train DPMs rooted at each node\n');
-
-%% find thresholds for each part (only unary score)
-
-
 

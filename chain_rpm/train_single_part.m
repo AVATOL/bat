@@ -4,11 +4,16 @@ function [model,progress] = train_single_part(name,samples,params,options)
 %% init model
 params.num_parts = 1;
 params.len = 1+prod(params.tsize);
-model = init_model(params);
-model.parent = 0;
-model.len = 0; % NOTE: important before add_factors
-model.num_parts = 1;
-model = add_factors(params, model, 'node', []);
+
+if exist([params.cachedir name '.mat'], 'file')
+    load([params.cachedir name],'model');
+else
+    model = init_model(params);
+    model.parent = 0;
+    model.len = 0; % NOTE: important before add_factors
+    model.num_parts = 1;
+    model = add_factors(params, model, 'node', []);
+end
 
 %% patterns and labels
 if params.warp

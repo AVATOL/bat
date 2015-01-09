@@ -30,7 +30,7 @@ params.overlap    = 0.5;
 params.thresh     = 0;
 params.presence_w = 0;
 % control flags
-params.show_data   = 1;
+params.show_data   = 0;
 params.test_in_train = 1;
 params.show_interm = 0;
 
@@ -49,10 +49,10 @@ det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/dete
 [trainset testset taxa meta] = avatol_config(input_dir, params);
 
 %% training
-dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+avatol_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 %% testing
-avatol_test_unary(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
+avatol_test(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
 
 ret = 1;
 

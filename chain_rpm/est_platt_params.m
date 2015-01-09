@@ -1,4 +1,4 @@
-function [pA,pB] = est_post_params(model, samples, params)
+function [pA,pB] = est_platt_params(model, samples, params)
 %
 
 nvsp = 5; % 5 times more neg than pos

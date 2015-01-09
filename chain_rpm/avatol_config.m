@@ -34,7 +34,7 @@ while 1
 
     if strcmp(strs{1},'character')
         meta.chars(end+1).id = strs{2};
-        meta.chars(end).name = strs{3};
+        meta.chars(end).name = name_shrink(strs{3});
     elseif strcmp(strs{1},'media')
         if strcmp(strs{end}, 'training')
             train(end+1).id = strs{2};
@@ -47,7 +47,7 @@ while 1
         end
     elseif strcmp(strs{1},'state')
         meta.states(end+1).id = strs{2};
-        meta.states(end).name = strs{3};
+        meta.states(end).name = name_shrink(strs{3});
         meta.states(end).cid = strs{4};
         if isempty(strfind(strs{3}, 'present')) % NOTE: only deal with presence
             meta.states(end).presence = 0;
@@ -56,10 +56,10 @@ while 1
         end
     elseif strcmp(strs{1},'taxon')
         meta.taxa(end+1).id = strs{2};
-        meta.taxa(end).name = strs{3};
+        meta.taxa(end).name = name_shrink(strs{3});
     elseif strcmp(strs{1},'view')
         meta.views(end+1).id = strs{2};
-        meta.views(end).name = strs{3};
+        meta.views(end).name = name_shrink(strs{3});
     else
         error('summary.txt: unknown line');
     end
@@ -342,3 +342,12 @@ for n = 1:length(trains)
         trains(n).y2(p) = points(p,2) + boxsize/2;
     end
 end
+
+
+function name = name_shrink(name)
+%
+
+name = strrep(name, 'Upper ', '');
+name = strrep(name, ' presence', '');
+name = strrep(name, ' ', '-');
+

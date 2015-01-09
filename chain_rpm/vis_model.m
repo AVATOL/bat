@@ -1,9 +1,20 @@
-function vis_model(model)
+function vis_model(model, savname)
 %
+
+if nargin < 2
+    savname = [];
+end
 
 figure(1002); vis_templates(model);
 title(sprintf('norm(w) = %f\n', norm(model.w,2)));
+if ~isempty(savname)
+    export_fig([savname '_template.png']);
+end
+
 figure(1003); vis_deformations(model);
+if ~isempty(savname)
+    export_fig([savname '_def.png']);
+end
 
 
 function vis_templates(model)

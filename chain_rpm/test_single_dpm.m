@@ -1,19 +1,24 @@
-function [boxes,pscore] = test_single_dpm(params, model, im, pAs, pBs)
+function [boxes,pscores,fmaps] = test_single_dpm(params, model, data, pAs, pBs)
 % 
 
 if nargin < 4
     pAs = []; pBs = [];
 end
 
-if ischar(im)
-    im = imread(im);
+if isstruct(data)
+    pyra = data;
+else
+    if ischar(data)
+        im = imread(data);
+    end
+    pyra = hog_pyra(im, params);
 end
-pyra = hog_pyra(im, params);
 
 nV = model.num_parts;
 levels = 1:length(pyra.feat);
 boxes = zeros(length(levels),nV*4+2);
 pscores = zeros(length(levels),nV);
+fmaps = cell(length(levels),1);
 
 %% parse model
 model = wtomodel(model.w, model); % update model.filter to do Inference
@@ -60,9 +65,10 @@ for lvl = levels
     rx = nodes(ch_0).Ix;
 
     % 4) backtracking
-    [bb,pscore] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,0);
+    [bb,pscore,fmap] = backtrack(rx,ry,lvl,nodes,edges,pyra,parent,params.latent);
     boxes(lvl,:) = [bb lvl score];
     pscores(lvl,:) = pscore;
+    fmaps{lvl} = fmap;
 end % lvl
 
 if all(boxes(:) == 0)
@@ -73,11 +79,13 @@ end
 
 [~,sI] = sort(boxes(:,end),'descend');
 boxes = boxes(sI,:);
-pscore = pscores(sI,:);
+pscores = pscores(sI,:);
+fmaps = fmaps(sI);
 
+% platt scaling
 if ~isempty(pAs) && ~isempty(pBs)
     for i = 1:nV
-        pscore(:,i) = 1 ./ (1 + exp( pscore(:,i) .* pAs(i) + pBs(i) ) );
+        pscores(:,i) = 1 ./ (1 + exp( pscores(:,i) .* pAs(i) + pBs(i) ) );
     end
 end
 

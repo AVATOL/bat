@@ -30,6 +30,7 @@ catch
             tidx = arrayfun(@(x) strcmp(x.taxon, taxon_list{t}), trains); % in t
             tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
             pidx = arrayfun(@(x) taxa(tid).part_mask(p) == 1, trains); % has p
+            clear subsamps;
             subsamps = trains(tidx & pidx);
 
             if isempty(subsamps)
@@ -84,7 +85,7 @@ for n = 1:length(tests)
             bba{t} = boxes(1,:);
             psa(t) = pscore(1); 
 
-            figure(1000); showboxes(im,boxes(1,:),{'g'}); pause(0.5);
+            figure(1000); showboxes(im,boxes(1,:),{'g'}); 
             title(sprintf('%s, %s: %s, %s', tests(n).id, tests(n).taxon, ...
                 part_list{p}, taxon_list{t}));
         end
@@ -98,7 +99,7 @@ for n = 1:length(tests)
         
         avatol_write(det_results, output_dir, boxes(1:4), pscore, meta.chars(cid), meta.states(sid), tests(n));
         
-        figure(1001); showboxes(im,boxes(1,:),{'y'}); pause(0.5);
+        figure(1001); showboxes(im,boxes(1,:),{'y'}); 
         title(sprintf('%s, %s: %s, %s: gt %d, pred %d', tests(n).id, tests(n).taxon, ...
                 part_list{p}, taxon_list{ti}, tests(n).part_mask(p), presence));
     end

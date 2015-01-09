@@ -102,6 +102,11 @@ for p = 1:options.num_passes
         
         k = k+1;
         
+        % DEBUG code
+        %model = wtomodel(model.w, model);
+        %vis_model(model);
+        %pause(1);
+        
         % debug: compute objective and duality gap. do not use this flag for
         % timing the optimization, since it is very costly!
         if (options.debug && k == debug_iter)
