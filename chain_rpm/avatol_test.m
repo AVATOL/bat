@@ -102,6 +102,7 @@ for t = 1:num_taxa
         [boxes,pscores] = test_single_dpm(params, model, im, pAs, pBs);
         fprintf('%s tested in %.2fs.\n', subsamps(i).id, toc);
         
+        % write det_res and output
         subsamps(i).imsiz = size(im);
         bbs = boxes(1,1:end-2);
         bbs = reshape(bbs, [4,model.num_parts])';

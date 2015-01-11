@@ -52,7 +52,7 @@ det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/dete
 avatol_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 %% testing
-avatol_test(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
+avatol_test_zs_lr(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
 
 ret = 1;
 

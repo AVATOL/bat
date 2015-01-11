@@ -1,5 +1,6 @@
 function avatol_train(part_list, taxon_list, taxa, samples, params, options)
 %
+% TODO: params.latent -> params.write/fmap
 
 name = [part_list{:}];
 cachedir = params.cachedir;

@@ -1,7 +1,11 @@
-function avatol_write(det_results, output_dir, bb, pscore, part, state, samp)
+function avatol_write(det_results, output_dir, bb, pscore, part, state, samp, set_id)
+
+if nargin < 8
+    set_id = 1; % image_scored
+end
 
 write_det_res(det_results, bb, part, state, samp);
-write_output(output_dir, pscore, part, state, samp);
+write_output(output_dir, pscore, part, state, samp, set_id);
 
 %% helper functions
 function write_det_res(det_results, bb, part, state, samp)
@@ -24,7 +28,17 @@ fprintf(fp, content);
 fclose(fp);
 
 
-function write_output(output_dir, pscore, part, state, samp)
+function write_output(output_dir, pscore, part, state, samp, set_id)
+
+if nargin < 6
+    set_id = 1; % image_scored
+end
+
+if set_id == 1
+    set_id = 'image_scored';
+else
+    set_id = 'training_data';
+end
 
 fsp = filesep;
 
@@ -37,7 +51,7 @@ det_file = ['detection_results' sub_dir fsp samp.id '_' part.id '.txt'];
 file = [output_dir fsp 'sorted_output_data_' part.id '_' part.name '.txt'];
 fp = fopen(file, 'a');
 
-content = ['image_scored' '|' im '|' state.id '|' state.name '|' det_file '|' samp.tid '|1|' num2str(pscore) '\n'];
+content = [set_id '|' im '|' state.id '|' state.name '|' det_file '|' samp.tid '|1|' num2str(pscore) '\n'];
 fprintf(fp, content);
 
 fclose(fp);
