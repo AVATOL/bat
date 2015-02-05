@@ -11,7 +11,7 @@ t = id(y,:);
 net = glm(D, nclass, 'logistic');
 
 options = foptions;
-%options(1) = 1; % set to 1 to display error values during training
+options(1) = 1; % set to 1 to display error values during training
 options(14) = 10; %  maximum number of iterations 
 
 net = glmtrain(net, options, X, t);

@@ -60,7 +60,7 @@ save([cachedir 'platt_params.mat'], 'platt_params');
 end
 
 %% present teeth
-for t = 1:num_taxa
+for t = []%1:num_taxa
     cls = [name '_DPM_taxon_' taxon_list{t}];
     fprintf('(taxon %d): DPM testing %s...\n', t, cls);
 
@@ -116,8 +116,8 @@ for t = 1:num_taxa
             presence = (pscores(p) >= 0.5);
             sid  = arrayfun(@(x) (x.presence == presence) & strcmp(x.cid, meta.chars(p).id), meta.states);
             assert(sum(sid) == 1);
-            avatol_write(det_results, output_dir, boxes(p,:), pscores(p), ...
-                meta.chars(p), meta.states(sid), subsamps(i));
+            %avatol_write(det_results, output_dir, boxes(p,:), pscores(p), ...
+            %    meta.chars(p), meta.states(sid), subsamps(i));
         end
 
         B = [subsamps(i).x1;subsamps(i).y1;subsamps(i).x2;subsamps(i).y2];
@@ -144,7 +144,7 @@ for n = 1:length(tests)
         psa = -inf.*ones(1,num_taxa);
         
         for t = 1:num_taxa
-            fprintf('(%d, %d): %s, %s\n', p, t, part_list{p}, taxon_list{t});  
+            %fprintf('(%d, %d): %s, %s\n', p, t, part_list{p}, taxon_list{t});  
 
             %tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
             if taxa(t).part_mask(p) == 0 % no such part model indexed by (p,t)
@@ -174,10 +174,12 @@ for n = 1:length(tests)
         boxes = bba{ti};
         presence = (pscore >= 0.5);
         
+        fprintf('gt %d, presence %d, pscore %f\n', tests(n).part_mask(p), presence, pscore);
+        
         sid  = arrayfun(@(x) (x.presence == presence) & strcmp(x.cid, meta.chars(cid).id), meta.states);
         assert(sum(sid) == 1);
         
-        avatol_write(det_results, output_dir, boxes(1:4), pscore, meta.chars(cid), meta.states(sid), tests(n));
+        %avatol_write(det_results, output_dir, boxes(1:4), pscore, meta.chars(cid), meta.states(sid), tests(n));
         
         %figure(1001); showboxes(im,boxes(1,:),{'y'}); 
         %title(sprintf('%s, %s: %s, %s: gt %d, pred %d', tests(n).id, tests(n).taxon, ...
