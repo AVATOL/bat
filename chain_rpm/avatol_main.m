@@ -1,4 +1,4 @@
-function ret = avatol_main()
+function ret = avatol_main(input_dir, output_dir, det_results)
 
 close all
 setup_path
@@ -18,7 +18,7 @@ params.bb_ratio   = sparse([0 0 1.0 1.5 3.0; % I1-P1 I1-P4 I1-M3
                             0 0 0   1.0 2.5; % P1-P4 P1-M3
                             0 0 0   0   2.5; % P4-M3
                             0 0 0   0   0]);
-params.bb_range   = [35, 80];
+params.bb_range   = [35, 80]; % range of sizes of bbox in pixel
 params.bb_taxa_spec = {'Molossus molossus', 'Mormoops megalophylla', ...
     'Pteropus vampyrus', 'Taphozous melanopogon', 'Hipposideros diadema'};
 params.bb_ratio_spec = [2.4, 3.4, 2.5, 2.2, 3.3]; % need to test st-ed
@@ -43,16 +43,18 @@ options.do_line_search = 1;
 options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% data configuration
-input_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/input/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
-output_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/output/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
-det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/detection_results/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+if nargin == 0
+    input_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/input/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+    output_dir = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/output/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+    det_results = '/home/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/detection_results/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
+end
 [trainset testset taxa meta] = avatol_config(input_dir, params);
 
 %% training
 avatol_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
 
 %% testing
-avatol_test(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
+avatol_test_zs_lr(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
 
 ret = 1;
 

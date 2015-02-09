@@ -53,7 +53,7 @@ for p = 1:num_parts
             [model,progress] = train_single_part(cls,subsamps,params,options);
             fprintf('warped_%s trained in %.2fs.\n', cls, toc);
 
-            % training latent
+            % NOTE: training latent no need & doesn't work well this case
             %params.warp      = 0;
             %params.latent    = 1;
             %tic

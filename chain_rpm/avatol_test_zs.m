@@ -62,24 +62,8 @@ for n = 1:length(samples)
             %export_fig([sprintf('%s_%s__%s_%s', samples(n).id, samples(n).taxon, part_list{p}, taxon_list{t}) '_det_single.png']);
         end % t
         
-        %[pscore, ti] = max(psa);
-        %bb = bba(ti,:);
-
         psa_n{p}(:,n) = psa;
         bba_n{p}(:,:,n) = bba;
-
-        %presence = (pscore >= thresholds(p,ti));
-        %sid  = arrayfun(@(x) (x.presence == presence) & strcmp(x.cid, meta.chars(cid).id), meta.states);
-        %assert(sum(sid) == 1);
-        
-        %avatol_write(det_results, output_dir, bb(1:4), pscore, meta.chars(cid), meta.states(sid), samples(n));
-        
-        %figure(1001); showboxes(im,bb,{'y'}); % best
-        %title(sprintf('%s, %s: %s, %s: gt %d, pred %d', samples(n).id, samples(n).taxon, ...
-        %        part_list{p}, taxon_list{ti}, samples(n).part_mask(p), presence));
-
-        %figure(1001); showboxes(im,bba,{'y'}); %pause; % all
-        %export_fig([sprintf('%s_%s__%s', samples(n).id, samples(n).taxon, part_list{p}) '_det_all.png']);
     end % p
 end % n
 

@@ -18,16 +18,17 @@ num_parts = length(part_list);
 num_taxa = length(taxon_list);
 num_samples = length(samples);
 
+% specify train_taxa and test_taxa
 train_taxa_ind = [1 2 3 4 6 7 10 13 14 17 20 24];
 test_taxa_ind = sort(setdiff(1:num_taxa, train_taxa_ind));
 train_taxa = taxon_list(train_taxa_ind);
 test_taxa = taxon_list(test_taxa_ind);
 
 train_taxa_feat = train_taxa_ind;
-dim = length(train_taxa_feat);
+dim = length(train_taxa_feat); 
 
-load('bat_mat/psa_n.mat');
-load('bat_mat/bba_n.mat');
+load('bat_mat/psa_n.mat'); % pscores
+load('bat_mat/bba_n.mat'); % bboxes
 
 for p = 1:num_parts
     tr_ind = arrayfun(@(x) ismember(x.taxon, train_taxa), samples);
@@ -70,8 +71,9 @@ for p = 1:num_parts
         end
     end
     
-    X = [X; OV];
+    X = [X; OV]; % X includes part scores and overlaps between each other
     
+    % train-test split
     Xtr = X(:, tr_ind);
     ytr = zeros(1,num_samples);
     ytr(tr_pos_ind) = 1;
@@ -106,6 +108,7 @@ for p = 1:num_parts
     bba_tr = bba(:, :, tr_ind);
     bba_te = bba(:, :, te_ind);
     
+    % write results
     % te phase
     subsamps = samples(te_ind);
     acc_cnt = 0;
@@ -132,12 +135,14 @@ for p = 1:num_parts
         avatol_write(det_results, output_dir, bb(1:4), pscore, ...
            meta.chars(cid), meta.states(sid), subsamps(n));
         
-%         figure(1001); showboxes(im, bboxes(1:5,:), {'y'}); % best
-%         title(sprintf('(%s, %s, %s): use pmodel %s: gt %d, pred %d (%f)', ...
-%             part_list{p}, subsamps(n).id, subsamps(n).taxon, ...
-%             taxon_list{ti(1)}, ...
-%             subsamps(n).part_mask(p), presence, pscore));
-%         pause(1);
+        if params.show_interm
+            figure(1001); showboxes(im, bboxes(1:5,:), {'y'}); % best
+            title(sprintf('(%s, %s, %s): use pmodel %s: gt %d, pred %d (%f)', ...
+                part_list{p}, subsamps(n).id, subsamps(n).taxon, ...
+                taxon_list{ti(1)}, ...
+                subsamps(n).part_mask(p), presence, pscore));
+            pause(1);
+        end
     end
     clear subsamps;
 
@@ -164,12 +169,14 @@ for p = 1:num_parts
         avatol_write(det_results, output_dir, bb(1:4), pscore, ...
            meta.chars(cid), meta.states(sid), subsamps(n), 2); % training_data
         
-%         figure(1001); showboxes(im, bboxes(1:5,:), {'y'}); % best
-%         title(sprintf('(%s, %s, %s): use pmodel %s: gt %d, pred %d (%f)', ...
-%             part_list{p}, subsamps(n).id, subsamps(n).taxon, ...
-%             taxon_list{ti(1)}, ...
-%             subsamps(n).part_mask(p), presence, pscore));
-%         pause(1);
+        if params.show_interm
+            figure(1001); showboxes(im, bboxes(1:5,:), {'y'}); % best
+            title(sprintf('(%s, %s, %s): use pmodel %s: gt %d, pred %d (%f)', ...
+                part_list{p}, subsamps(n).id, subsamps(n).taxon, ...
+                taxon_list{ti(1)}, ...
+                subsamps(n).part_mask(p), presence, pscore));
+            pause(1);
+        end
     end
     clear subsamps;
 end
