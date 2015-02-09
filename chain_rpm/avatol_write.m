@@ -22,8 +22,8 @@ y = y*100 / h;
 file = [det_results fsp samp.id '_' part.id '.txt'];
 fp = fopen(file, 'w');
 
-content = [num2str(x) ',' num2str(y) ':' part.id ':' part.name ':' state.id ':' state.name '\n'];
-fprintf(fp, content);
+content = [num2str(x) ',' num2str(y) ':' part.id ':' part.name ':' state.id ':' state.name];
+fprintf(fp, '%s\n', content);
 
 fclose(fp);
 
@@ -51,7 +51,7 @@ det_file = ['detection_results' sub_dir fsp samp.id '_' part.id '.txt'];
 file = [output_dir fsp 'sorted_output_data_' part.id '_' part.name '.txt'];
 fp = fopen(file, 'a');
 
-content = [set_id '|' im '|' state.id '|' state.name '|' det_file '|' samp.tid '|1|' num2str(pscore) '\n'];
-fprintf(fp, content);
+content = [set_id '|' im '|' state.id '|' state.name '|' det_file '|' samp.tid '|1|' num2str(pscore)];
+fprintf(fp, '%s\n', content);
 
 fclose(fp);
