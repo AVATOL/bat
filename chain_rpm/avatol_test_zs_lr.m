@@ -27,8 +27,58 @@ test_taxa = taxon_list(test_taxa_ind);
 train_taxa_feat = train_taxa_ind;
 dim = length(train_taxa_feat); 
 
-load('bat_mat/psa_n.mat'); % pscores
-load('bat_mat/bba_n.mat'); % bboxes
+try 
+    load('bat_mat/psa_n.mat'); % pscores
+    load('bat_mat/bba_n.mat'); % bboxes
+catch
+    psa_n = cell(num_parts,1);
+    bba_n = cell(num_parts,1);
+    for k = 1:num_parts
+        psa_n{k} = zeros(num_taxa,num_samples);
+        bba_n{k} = zeros(num_taxa,6,num_samples);
+    end
+
+    for n = 1:length(samples)
+        fprintf('testing-det: %d, %s, %s\n', n, samples(n).id, samples(n).taxon);
+        im = imread(samples(n).im);
+        samples(n).imsiz = size(im);
+        
+        for p = 1:num_parts
+            cid  = arrayfun(@(x) strcmp(x.name, part_list{p}), meta.chars);
+            bba = zeros(num_taxa,6);
+            psa = -inf.*ones(num_taxa,1);
+            
+            for t = 1:num_taxa
+                fprintf('(%d, %d, %d): %s, %s, %s\n', n, p, t, samples(n).id, part_list{p}, taxon_list{t});  
+    
+                %tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
+                if taxa(t).part_mask(p) == 0 % no such part model indexed by (p,t)
+                    continue
+                end
+            
+                cls = [name '_part_' part_list{p} '_taxon_' taxon_list{t}];
+                assert(exist([cachedir cls '.mat'], 'file') > 0);
+                load([cachedir cls]);
+                
+                params.latent = 0;
+                [boxes, pscores] = test_single_dpm(params, model, im); 
+                bba(t,:) = boxes(1,:);
+                psa(t) = pscores(1); 
+    
+                %figure(1000); showboxes(im,boxes(1,:),{'g'}); 
+                %title(sprintf('%s, %s: %s, %s', samples(n).id, samples(n).taxon, ...
+                %    part_list{p}, taxon_list{t}));
+                %export_fig([sprintf('%s_%s__%s_%s', samples(n).id, samples(n).taxon, part_list{p}, taxon_list{t}) '_det_single.png']);
+            end % t
+            
+            psa_n{p}(:,n) = psa;
+            bba_n{p}(:,:,n) = bba;
+        end % p
+    end % n
+    
+    save('bat_mat/psa_n.mat', 'psa_n');
+    save('bat_mat/bba_n.mat', 'bba_n');
+end
 
 for p = 1:num_parts
     tr_ind = arrayfun(@(x) ismember(x.taxon, train_taxa), samples);
@@ -87,11 +137,11 @@ for p = 1:num_parts
     yte(yte == 0) = [];
         
     % train LR
-    if exist(['lr_presence_' num2str(p) '.mat'], 'file')
-        load(['lr_presence_' num2str(p) '.mat']);
+    if exist(['bat_mat/lr_presence_' num2str(p) '.mat'], 'file')
+        load(['bat_mat/lr_presence_' num2str(p) '.mat']);
     else
         net = train_lr(Xtr', ytr');
-        save(['lr_presence_' num2str(p) '.mat'], 'net');
+        save(['bat_mat/lr_presence_' num2str(p) '.mat'], 'net');
     end
     
     % test LR
@@ -143,15 +193,15 @@ for p = 1:num_parts
                 subsamps(n).part_mask(p), presence, pscore));
             pause(1);
         end
-    end
+    end % te_ind
     clear subsamps;
 
-    fprintf('accuracy of part %s is %f', part_list{p}, acc_cnt / sum(te_ind));
+    fprintf('*** accuracy of part %s is %f', part_list{p}, acc_cnt / sum(te_ind));
     
     % tr phase
     subsamps = samples(tr_ind);
     for n = 1:sum(tr_ind)
-        fprintf('training: %d, %s, %s\n', n, subsamps(n).id, subsamps(n).taxon);
+        fprintf('testing (trainset): %d, %s, %s\n', n, subsamps(n).id, subsamps(n).taxon);
         im = imread(subsamps(n).im);
         subsamps(n).imsiz = size(im);
         
@@ -177,6 +227,6 @@ for p = 1:num_parts
                 subsamps(n).part_mask(p), presence, pscore));
             pause(1);
         end
-    end
+    end % tr_ind
     clear subsamps;
-end
+end % p
