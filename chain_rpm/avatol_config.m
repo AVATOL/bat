@@ -281,7 +281,8 @@ labelid = str{5};
 
 function abspath = get_abs_path(rt_dir, path)
 abspath = [rt_dir path];
-abspath = strrep(abspath, '\', '/');
+fsp = filesep;
+abspath = strrep(abspath, '\', fsp);
 
 
 function point = ratio2coord(sxy, absim, is_resiz)
