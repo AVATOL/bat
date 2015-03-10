@@ -24,6 +24,8 @@ test_taxa_ind = sort(setdiff(1:num_taxa, train_taxa_ind));
 train_taxa = taxon_list(train_taxa_ind);
 test_taxa = taxon_list(test_taxa_ind);
 
+test_taxa_pmsk = cat(1,taxa(test_taxa_ind).part_mask);
+
 train_taxa_feat = train_taxa_ind;
 dim = length(train_taxa_feat); 
 
@@ -145,12 +147,12 @@ for p = 1:num_parts
     end
     
     % test LR
-    [cltr, Ztr, pcorr_tr] = test_lr(net, Xtr', ytr');
-    [clte, Zte, pcorr_te] = test_lr(net, Xte', yte');
+    [cltr, Ztr, pcorr_tr, acc_tr] = test_lr(net, Xtr', ytr');
+    [clte, Zte, pcorr_te, acc_te] = test_lr(net, Xte', yte');
     
-    fprintf('results: train (%f,%f), test (%f,%f)\n', ...
-        pcorr_tr(1), pcorr_tr(2), ...
-        pcorr_te(1), pcorr_te(2));
+    fprintf('results: train (%f,%f,%f), test (%f,%f,%f)\n', ...
+        pcorr_tr(1), pcorr_tr(2), acc_tr, ...
+        pcorr_te(1), pcorr_te(2), acc_te);
     
     % attribute classification for each sample (testing on te and tr)
     cid  = arrayfun(@(x) strcmp(x.name, part_list{p}), meta.chars);
@@ -160,10 +162,15 @@ for p = 1:num_parts
     
     % write results
     % te phase
+    
+    all_pscore = zeros(sum(te_ind),num_taxa);
+    all_presence = zeros(sum(te_ind),num_taxa);
+    all_tid = zeros(sum(te_ind),num_taxa);
     subsamps = samples(te_ind);
     acc_cnt = 0;
     for n = 1:sum(te_ind)
-        fprintf('testing: %d, %s, %s\n', n, subsamps(n).id, subsamps(n).taxon);
+        %fprintf('testing: %d, %s, %s\n', n, subsamps(n).id, subsamps(n).taxon);
+        
         im = imread(subsamps(n).im);
         subsamps(n).imsiz = size(im);
         
@@ -182,8 +189,14 @@ for p = 1:num_parts
         
         pscore = Zte(n,1);
         
-        avatol_write(det_results, output_dir, bb(1:4), pscore, ...
-           meta.chars(cid), meta.states(sid), subsamps(n));
+        %avatol_write(det_results, output_dir, bb(1:4), pscore, ...
+        %   meta.chars(cid), meta.states(sid), subsamps(n));
+        fprintf('testing: (%d, %s) -- %s, %s, %f \n', n, subsamps(n).taxon, meta.chars(cid).name, meta.states(sid).name, pscore);
+        
+        tid  = cellfun(@(x) strcmp(x, subsamps(n).taxon), taxon_list);
+        all_pscore(n,tid) = pscore;
+        all_presence(n,tid) = presence;
+        all_tid(n,:) = tid;
         
         if params.show_interm
             figure(1001); showboxes(im, bboxes(1:5,:), {'y'}); % best
@@ -196,7 +209,17 @@ for p = 1:num_parts
     end % te_ind
     clear subsamps;
 
-    fprintf('*** accuracy of part %s is %f', part_list{p}, acc_cnt / sum(te_ind));
+    fprintf('*** accuracy of part %s is %f\n', part_list{p}, acc_cnt / sum(te_ind));
+    A = sum(all_pscore,1) ./ sum(all_tid,1);
+    A = A(A>=0);
+    B = A; B(A < 0.5) = 1 - A(A < 0.5);
+    
+    fprintf('%d    ', test_taxa_pmsk(:,p)); fprintf('\n');
+    fprintf('%d    ', A >= 0.5); fprintf('\n');
+    fprintf('%.2f ', B); fprintf('\n');
+    fprintf('%f ', A); fprintf('\n');
+    
+    continue;
     
     % tr phase
     subsamps = samples(tr_ind);

@@ -21,7 +21,7 @@ params.overlap    = 0.5;
 params.thresh     = 0;
 params.presence_w = 0;
 % control flags
-params.show_data   = 0;
+params.show_data   = 1;
 params.test_in_train = 1;
 
 %% ssvm params 
@@ -37,5 +37,8 @@ options.debug = 0; % for displaying more info (makes code about 3x slower)
 
 %% training
 dpm_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+
+%% testing
+dpm_test(meta.part_list, meta.taxon_list, taxa, trainset, params);
 
 

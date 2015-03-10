@@ -1,4 +1,4 @@
-function [cl, Z, pcorr] = test_lr(net, X, y) 
+function [cl, Z, pcorr, acc] = test_lr(net, X, y) 
 % X: (nsamples,dim)
 % y: (nsamples,1)
 
@@ -25,6 +25,7 @@ for i = 1:nsp
 end
 
 pcorr = diag(cm) ./ ctot';
+acc = trace(cm) ./ sum(cm(:));
 
 labels = {'presence','absence'};
 for i = 1:nclass
