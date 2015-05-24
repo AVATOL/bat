@@ -57,9 +57,22 @@ while 1
     elseif strcmp(strs{1},'taxon')
         meta.taxa(end+1).id = strs{2};
         meta.taxa(end).name = name_shrink(strs{3});
+        if strcmp(strs{4},'training')
+            meta.taxa(end).split = 1;
+        elseif strcmp(strs{4},'scoring')
+            meta.taxa(end).split = 0;
+        else
+            error('unknown train-test split');
+        end
     elseif strcmp(strs{1},'view')
         meta.views(end+1).id = strs{2};
         meta.views(end).name = name_shrink(strs{3});
+    elseif strcmp(strs{1},'inputDir')
+        continue
+    elseif strcmp(strs{1},'outputDir')
+        continue
+    elseif strcmp(strs{1},'detectionResultsDir')
+        continue
     else
         error('summary.txt: unknown line');
     end
@@ -105,6 +118,9 @@ for i = 1:n_parts
         tline = fgetl(fp);
         if ~ischar(tline)
             break
+        end
+        if ~isempty(strfind(tline, 'NA'))
+            continue
         end
         
         strs = strsplit(tline, '|');

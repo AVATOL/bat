@@ -19,7 +19,8 @@ num_taxa = length(taxon_list);
 num_samples = length(samples);
 
 % specify train_taxa and test_taxa
-train_taxa_ind = [1 2 3 4 6 7 10 13 14 17 20 24];
+%train_taxa_ind = [1 2 3 4 6 7 10 13 14 17 20 24];
+train_taxa_ind = find([meta.taxa.split] == 1);
 test_taxa_ind = sort(setdiff(1:num_taxa, train_taxa_ind));
 train_taxa = taxon_list(train_taxa_ind);
 test_taxa = taxon_list(test_taxa_ind);
