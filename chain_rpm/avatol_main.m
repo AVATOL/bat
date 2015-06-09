@@ -51,7 +51,8 @@ end
 [trainset testset taxa meta] = avatol_config(input_dir, params);
 
 %% training
-avatol_train(meta.part_list, meta.taxon_list, taxa, trainset, params, options);
+traintestset = cat(2,trainset,testset);
+avatol_train(meta.part_list, meta.taxon_list, taxa, traintestset, params, options);
 
 %% testing
 avatol_test_zs_lr(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);

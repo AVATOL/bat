@@ -79,6 +79,9 @@ catch
         end % p
     end % n
     
+    if ~exist('bat_mat', 'dir')
+        mkdir('bat_mat');
+    end
     save('bat_mat/psa_n.mat', 'psa_n');
     save('bat_mat/bba_n.mat', 'bba_n');
 end
