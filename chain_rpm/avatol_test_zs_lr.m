@@ -193,8 +193,8 @@ for p = 1:num_parts
         
         pscore = Zte(n,1);
         
-        %avatol_write(det_results, output_dir, bb(1:4), pscore, ...
-        %   meta.chars(cid), meta.states(sid), subsamps(n));
+        avatol_write(det_results, output_dir, bb(1:4), pscore, ...
+           meta.chars(cid), meta.states(sid), subsamps(n));
         fprintf('testing: (%d, %s) -- %s, %s, %f \n', n, subsamps(n).taxon, meta.chars(cid).name, meta.states(sid).name, pscore);
         
         tid  = cellfun(@(x) strcmp(x, subsamps(n).taxon), taxon_list);
