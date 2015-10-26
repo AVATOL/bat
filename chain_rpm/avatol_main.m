@@ -48,14 +48,14 @@ if nargin == 0
     output_dir = '/scratch/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/output/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
     det_results = '/scratch/hushell/working/git-dir/avatol_cv/matrix_downloads/BAT/detection_results/DPM/c427749c427751c427753c427754c427760/v3540/split_0.7/';
 end
-[trainset testset taxa meta] = avatol_config(input_dir, params);
+[trainset, testset, taxa, meta, ~, testset_pruned] = avatol_config(input_dir, params);
 
 %% training
 traintestset = cat(2,trainset,testset);
 avatol_train(meta.part_list, meta.taxon_list, taxa, traintestset, params, options);
 
 %% testing
-avatol_test_zs_lr(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params);
+avatol_test_zs_lr(det_results, output_dir, meta.part_list, meta.taxon_list, taxa, meta, trainset, testset, params, testset_pruned);
 
 ret = 1;
 

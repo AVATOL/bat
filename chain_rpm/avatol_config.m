@@ -1,4 +1,4 @@
-function [train, test, taxa, meta] = avatol_config(input_folder, params)
+function [train, test, taxa, meta, train_pruned, test_pruned] = avatol_config(input_folder, params)
 %
 
 if exist([params.cachedir 'avatol_config.mat'], 'file')
@@ -38,10 +38,12 @@ while 1
     elseif strcmp(strs{1},'media')
         if strcmp(strs{end}, 'training')
             train(end+1).id = strs{2};
-            train(end).im = strs{3}; 
+            train(end).im = strs{3};
+            train(end).pruned = 0;
         elseif strcmp(strs{end}, 'toScore')
             test(end+1).id = strs{2};
             test(end).im = strs{3};
+            test(end).pruned = 0;
         else 
             error('unknown media file');
         end
@@ -176,15 +178,15 @@ end
 
 % remove duplicated samples
 tind = arrayfun(@(x) any(x.nlabels > 2), train);
-train(tind) = [];
+[train(tind).pruned] = deal(1);
 
 tind = arrayfun(@(x) any(x.nlabels > 2), test);
-test(tind) = [];
+[test(tind).pruned] = deal(1);
 
 %*** black list (incorrect annotations)
 blacklist = {'media\M283606.jpg', 'media\M283568.jpg'};
 tind = arrayfun(@(x) ismember(x.im, blacklist), train);
-train(tind) = [];
+[train(tind).pruned] = deal(1);
 
 % get abs path
 for n = 1:length(train)
@@ -241,7 +243,7 @@ for i = 1:length(meta.taxa)
     
     %*** discard samples have diff labels as majority
     % TODO: discarded to test
-    train_test(tind(rowlocs ~= trow)) = [];
+    [train_test(tind(rowlocs ~= trow)).pruned] = deal(1);
 end
 
 % exclude taxa has inconsistent labels
@@ -259,8 +261,25 @@ test = rmfield(test, 'setid');
 assert(length(train) + length(test) == length(train_test));
 clear train_test
 
+%% separate into train/test sets and pruned images
+tind = arrayfun(@(x) any(x.pruned == 1), train);
+train_pruned = train(tind);
+train_pruned = rmfield(train_pruned, 'pruned');
+
+tind = arrayfun(@(x) any(x.pruned == 1), test);
+test_pruned = test(tind);
+test_pruned = rmfield(test_pruned, 'pruned');
+
+tind = arrayfun(@(x) any(x.pruned == 0), train);
+train = train(tind);
+train = rmfield(train, 'pruned');
+
+tind = arrayfun(@(x) any(x.pruned == 0), test);
+test = test(tind);
+test = rmfield(test, 'pruned');
+
 %% save
-save([params.cachedir 'avatol_config.mat'], 'train', 'test', 'taxa', 'meta');
+save([params.cachedir 'avatol_config.mat'], 'train', 'test', 'taxa', 'meta', 'train_pruned', 'test_pruned');
 
 %% vis
 if (params.show_data == 1)

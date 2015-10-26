@@ -1,4 +1,4 @@
-function avatol_test_zs_lr(det_results, output_dir, part_list, taxon_list, taxa, meta, trains, tests, params)
+function avatol_test_zs_lr(det_results, output_dir, part_list, taxon_list, taxa, meta, trains, tests, params, tests_pruned)
 
 fsp = filesep;
 det_results = strrep(det_results, '\', fsp);
@@ -223,6 +223,22 @@ for p = 1:num_parts
     fprintf('%.2f ', B); fprintf('\n');
     fprintf('%f ', A); fprintf('\n');
     
+    % could not score phase
+    subsamps = tests_pruned;
+    for n = 1:length(subsamps)
+        %fprintf('testing: %d, %s, %s\n', n, subsamps(n).id, subsamps(n).taxon);
+
+        presence = clte(n) == 1;
+        sid  = arrayfun(@(x) (x.presence == presence) & strcmp(x.cid, meta.chars(cid).id), meta.states);
+        assert(sum(sid) == 1);
+
+        avatol_write(det_results, output_dir, [], 'COULD_NOT_SCORE', ...
+           meta.chars(cid), meta.states(sid), subsamps(n));
+        fprintf('could not score: (%d, %s) -- %s, %s, %f \n', n, subsamps(n).taxon, meta.chars(cid).name, meta.states(sid).name, pscore);
+    end % length(subsamps)
+    clear subsamps;
+
+    % (skip training results for now)
     continue;
     
     % tr phase

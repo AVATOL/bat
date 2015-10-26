@@ -4,8 +4,12 @@ if nargin < 8
     set_id = 1; % image_scored
 end
 
-write_det_res(det_results, bb, part, state, samp);
-write_output(output_dir, pscore, part, state, samp, set_id);
+if ischar(pscore) % could_not_score
+    write_output(output_dir, pscore, part, state, samp, set_id);
+else
+    write_det_res(det_results, bb, part, state, samp);
+    write_output(output_dir, pscore, part, state, samp, set_id);
+end
 
 %% helper functions
 function write_det_res(det_results, bb, part, state, samp)
