@@ -53,7 +53,7 @@ sub_dir = sub_dir{2};
 det_file = ['detection_results' sub_dir fsp samp.id '_' part.id '.txt'];
 
 file = [output_dir fsp 'sorted_output_data_' part.id '_' part.name '.txt'];
-fp = fopen(file, 'a');
+fp = fopen(file, 'at');
 
 content = [set_id '|' im '|' state.id '|' state.name '|' det_file '|' samp.tid '|1|' num2str(pscore)];
 fprintf(fp, '%s\n', content);
