@@ -96,6 +96,7 @@ for n = 1:length(train)
     train(n).nlabels = zeros(length(meta.chars),1); 
     train(n).bb_ratio = 0;
     train(n).sid = cell(length(meta.chars),1);
+    train(n).tid = -1; % will be overwritten
 end
 
 for n = 1:length(test)
@@ -104,6 +105,7 @@ for n = 1:length(test)
     test(n).nlabels = zeros(length(meta.chars),1); 
     test(n).bb_ratio = 0;
     test(n).sid = cell(length(meta.chars),1);
+    test(n).tid = -1; % TODO
 end
 
 %% read input files -> train test (annotations)
@@ -132,12 +134,14 @@ for i = 1:n_parts
             tim = arrayfun(@(x) strcmp(x.im, im), train);
             assert(sum(tim) == 1);
 
-            fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+%             fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+            fann = fopen(anno, 'r'); % anno file
 
             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
             sann = strsplit(tann, ':');
             sxy = strsplit(sann{1}, ',');
-            train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
+%             train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
+            train(tim).point(i,:) = ratio2coord(sxy, train(tim).im);
             train(tim).sid{i} = sid;
             train(tim).tid = tid;
             train(tim).nlabels(i) = train(tim).nlabels(i) + 1; 
@@ -152,13 +156,15 @@ for i = 1:n_parts
             tim = arrayfun(@(x) strcmp(x.im, im), test);
             assert(sum(tim) == 1);
 
-            fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+%             fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+            fann = fopen(anno, 'r'); % anno file
 
             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
             sann = strsplit(tann, ':');
             sxy = strsplit(sann{1}, ',');
             sid = sann{4};
-            test(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,test(tim).im));
+%             test(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,test(tim).im));
+            test(tim).point(i,:) = ratio2coord(sxy, test(tim).im);
             test(tim).sid{i} = sid;
             test(tim).tid = tid;
             test(tim).nlabels(i) = test(tim).nlabels(i) + 1; 
@@ -190,11 +196,13 @@ tind = arrayfun(@(x) ismember(x.im, blacklist), train);
 
 % get abs path
 for n = 1:length(train)
-    train(n).im = get_abs_path(rt_dir,train(n).im);
+%     train(n).im = get_abs_path(rt_dir,train(n).im);
+    train(n).im = train(n).im;
 end
 
 for n = 1:length(test)
-    test(n).im = get_abs_path(rt_dir,test(n).im);
+%     test(n).im = get_abs_path(rt_dir,test(n).im);
+    test(n).im = test(n).im;
 end
 
 %% taxa 
