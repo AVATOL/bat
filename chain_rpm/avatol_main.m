@@ -2,6 +2,7 @@ function ret = avatol_main(input_dir, output_dir, det_results)
 
 close all
 setup_path
+[rootDir, ~, ~] = fileparts(output_dir);
 
 %% model params
 params = [];
@@ -10,7 +11,7 @@ params.sbin       = 8;
 params.interval   = 10;
 params.tsize      = [5 5 32];
 params.maxsize    = [5 5];
-params.cachedir   = 'cache/';
+params.cachedir   = fullfile(rootDir, 'cache/');
 params.boxsize    = 48;
 params.bb_cand    = [1 3 4 5];
 params.bb_ratio   = sparse([0 0 1.0 1.5 3.0; % I1-P1 I1-P4 I1-M3
@@ -41,6 +42,11 @@ options.gap_threshold = 0.1; % duality gap stopping criterion
 options.num_passes = 100; % max number of passes through data
 options.do_line_search = 1;
 options.debug = 0; % for displaying more info (makes code about 3x slower)
+
+%% create cache dir
+if ~exist(params.cachedir,'dir')
+  mkdir(params.cachedir);
+end
 
 %% data configuration
 if nargin == 0

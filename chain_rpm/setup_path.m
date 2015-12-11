@@ -12,8 +12,3 @@ if isoctave()
 else
   addpath ../mex;
 end
-
-cachedir = 'cache/';
-if ~exist(cachedir,'dir')
-  mkdir(cachedir);
-end
