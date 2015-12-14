@@ -31,8 +31,8 @@ train_taxa_feat = train_taxa_ind;
 dim = length(train_taxa_feat); 
 
 try 
-    load('bat_mat/psa_n.mat'); % pscores
-    load('bat_mat/bba_n.mat'); % bboxes
+    load(fullfile(cachedir, 'bat_mat', 'psa_n.mat')); % pscores
+    load(fullfile(cachedir, 'bat_mat', 'bba_n.mat')); % bboxes
 catch
     psa_n = cell(num_parts,1);
     bba_n = cell(num_parts,1);
@@ -52,6 +52,10 @@ catch
             psa = -inf.*ones(num_taxa,1);
             
             for t = 1:num_taxa
+                if taxa(t).split == 0
+                    continue;
+                end
+                
                 fprintf('(%d, %d, %d): %s, %s, %s\n', n, p, t, samples(n).id, part_list{p}, taxon_list{t});  
     
                 %tid  = arrayfun(@(x) strcmp(x.name, taxon_list{t}), taxa);
@@ -79,16 +83,18 @@ catch
         end % p
     end % n
     
-    if ~exist('bat_mat', 'dir')
-        mkdir('bat_mat');
+    if ~exist(fullfile(cachedir, 'bat_mat'), 'dir')
+        mkdir(fullfile(cachedir, 'bat_mat'));
     end
-    save('bat_mat/psa_n.mat', 'psa_n');
-    save('bat_mat/bba_n.mat', 'bba_n');
+    save(fullfile(cachedir, 'bat_mat', 'psa_n.mat'), 'psa_n');
+    save(fullfile(cachedir, 'bat_mat', 'bba_n.mat'), 'bba_n');
 end
 
 for p = 1:num_parts
     tr_ind = arrayfun(@(x) ismember(x.taxon, train_taxa), samples);
+%     tr_ind = arrayfun(@(x) ischar(x.tid), samples);
     te_ind = arrayfun(@(x) ismember(x.taxon, test_taxa), samples);
+%     te_ind = arrayfun(@(x) ~ischar(x.tid), samples);
 
     pi = arrayfun(@(x) x.part_mask(p) == 1, samples); % samples have p
     ni = ~pi;
@@ -143,11 +149,11 @@ for p = 1:num_parts
     yte(yte == 0) = [];
         
     % train LR
-    if exist(['bat_mat/lr_presence_' num2str(p) '.mat'], 'file')
-        load(['bat_mat/lr_presence_' num2str(p) '.mat']);
+    if exist(fullfile(cachedir, 'bat_mat', ['lr_presence_' num2str(p) '.mat']), 'file')
+        load(fullfile(cachedir, 'bat_mat', ['lr_presence_' num2str(p) '.mat']));
     else
         net = train_lr(Xtr', ytr');
-        save(['bat_mat/lr_presence_' num2str(p) '.mat'], 'net');
+        save(fullfile(cachedir, 'bat_mat', ['lr_presence_' num2str(p) '.mat']), 'net');
     end
     
     % test LR

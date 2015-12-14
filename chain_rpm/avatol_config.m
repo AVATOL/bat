@@ -105,7 +105,7 @@ for n = 1:length(test)
     test(n).nlabels = zeros(length(meta.chars),1); 
     test(n).bb_ratio = 0;
     test(n).sid = cell(length(meta.chars),1);
-    test(n).tid = -1; % TODO
+    test(n).tid = -1; % will be overwritten
 end
 
 %% read input files -> train test (annotations)
@@ -123,9 +123,9 @@ for i = 1:n_parts
         if ~ischar(tline)
             break
         end
-        if ~isempty(strfind(tline, 'NA'))
-            continue
-        end
+%         if ~isempty(strfind(tline, 'NA'))
+%             continue
+%         end
         
         strs = strsplit(tline, '|');
 
@@ -134,14 +134,14 @@ for i = 1:n_parts
             tim = arrayfun(@(x) strcmp(x.im, im), train);
             assert(sum(tim) == 1);
 
-%             fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
-            fann = fopen(anno, 'r'); % anno file
+            fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+%             fann = fopen(anno, 'r'); % anno file
 
             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
             sann = strsplit(tann, ':');
             sxy = strsplit(sann{1}, ',');
-%             train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
-            train(tim).point(i,:) = ratio2coord(sxy, train(tim).im);
+            train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
+%             train(tim).point(i,:) = ratio2coord(sxy, train(tim).im);
             train(tim).sid{i} = sid;
             train(tim).tid = tid;
             train(tim).nlabels(i) = train(tim).nlabels(i) + 1; 
@@ -157,15 +157,15 @@ for i = 1:n_parts
             assert(sum(tim) == 1);
 
 %             fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
-            fann = fopen(anno, 'r'); % anno file
-
-            tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
-            sann = strsplit(tann, ':');
-            sxy = strsplit(sann{1}, ',');
-            sid = sann{4};
+%             fann = fopen(anno, 'r'); % anno file
+% 
+%             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
+%             sann = strsplit(tann, ':');
+%             sxy = strsplit(sann{1}, ',');
+%             sid = sann{4};
 %             test(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,test(tim).im));
-            test(tim).point(i,:) = ratio2coord(sxy, test(tim).im);
-            test(tim).sid{i} = sid;
+%             test(tim).point(i,:) = ratio2coord(sxy, test(tim).im);
+%             test(tim).sid{i} = sid;
             test(tim).tid = tid;
             test(tim).nlabels(i) = test(tim).nlabels(i) + 1; 
 
@@ -173,7 +173,7 @@ for i = 1:n_parts
             assert(strcmp(meta.states(tst).cid, meta.chars(i).id));
             test(tim).part_mask(i) = meta.states(tst).presence;
                 
-            fclose(fann);
+%             fclose(fann);
         else
             error('Neither train or test image');
         end
@@ -196,13 +196,13 @@ tind = arrayfun(@(x) ismember(x.im, blacklist), train);
 
 % get abs path
 for n = 1:length(train)
-%     train(n).im = get_abs_path(rt_dir,train(n).im);
-    train(n).im = train(n).im;
+    train(n).im = get_abs_path(rt_dir,train(n).im);
+%     train(n).im = train(n).im;
 end
 
 for n = 1:length(test)
-%     test(n).im = get_abs_path(rt_dir,test(n).im);
-    test(n).im = test(n).im;
+    test(n).im = get_abs_path(rt_dir,test(n).im);
+%     test(n).im = test(n).im;
 end
 
 %% taxa 
@@ -224,7 +224,8 @@ for i = 1:length(meta.taxa)
         end
     end
     
-    if sum(rowlocs == trow) < 5 % majority must have 5+ samples
+%     if sum(rowlocs == trow) < 5 % majority must have 5+ samples
+    if sum(rowlocs == trow) < 1 % majority must have 1+ samples
         is_exclu_taxon(i) = 1;
         continue
     end
@@ -239,9 +240,11 @@ for i = 1:length(meta.taxa)
     taxa(i).name = meta.taxa(i).name;
     taxa(i).part_color = meta.part_color(taxa(i).part_mask);
     taxa(i).mask_color = meta.mask_color(taxa(i).part_mask+1);
+    taxa(i).split = meta.taxa(i).split;
     
     tind = find(tind);
-    [train_test(tind(rowlocs == trow)).taxon] = deal(taxa(i).name);
+%     [train_test(tind(rowlocs == trow)).taxon] = deal(taxa(i).name);
+    [train_test(tind).taxon] = deal(taxa(i).name);
     
     % special bb_ratio
     [tism,tloc] = ismember(taxa(i).name, params.bb_taxa_spec);
@@ -256,7 +259,7 @@ end
 
 % exclude taxa has inconsistent labels
 is_exclu_taxon = logical(is_exclu_taxon);
-taxa(is_exclu_taxon) = [];
+% taxa(is_exclu_taxon) = [];
 meta.taxa(is_exclu_taxon) = [];
 meta.taxon_list(is_exclu_taxon) = [];
 
@@ -323,9 +326,10 @@ labelid = str{5};
 
 
 function abspath = get_abs_path(rt_dir, path)
-abspath = [rt_dir path];
-fsp = filesep;
-abspath = strrep(abspath, '\', fsp);
+% abspath = [rt_dir path];
+% fsp = filesep;
+% abspath = strrep(abspath, '\', fsp);
+abspath = path;
 
 
 function point = ratio2coord(sxy, absim, is_resiz)

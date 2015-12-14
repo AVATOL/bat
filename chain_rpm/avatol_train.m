@@ -20,6 +20,10 @@ fprintf('--------------------------------------\n');
 fprintf('*=1=* train part filters independently\n');
 for p = 1:num_parts
     for t = 1:num_taxa
+        if taxa(t).split == 0
+            continue;
+        end
+        
         cls = [name '_part_' part_list{p} '_taxon_' taxon_list{t}];
         fprintf('(part %d, taxon %d): training %s...\n', p, t, cls);
         try
@@ -77,6 +81,10 @@ end % parts
 fprintf('--------------------------------------\n');
 fprintf('*=2=* train DPMs for each taxon\n');
 for t = 1:num_taxa
+    if taxa(t).split == 0
+        continue;
+    end
+    
     cls = [name '_DPM_taxon_' taxon_list{t}];
     fprintf('(taxon %d): DPM training %s...\n', t, cls);
     try

@@ -46,11 +46,12 @@ end
 
 fsp = filesep;
 
-[~,im,ext] = fileparts(samp.im);
-im = ['media' fsp im ext];
+% [~,im,ext] = fileparts(samp.im);
+% im = ['media' fsp im ext];
+im = samp.im;
 sub_dir = strsplit(output_dir, 'output');
-sub_dir = sub_dir{2};
-det_file = ['detection_results' sub_dir fsp samp.id '_' part.id '.txt'];
+det_file = fullfile(sub_dir{1}, 'detection_results', sub_dir{2}, ...
+    [samp.id '_' part.id '.txt']);
 
 file = [output_dir fsp 'sorted_output_data_' part.id '_' part.name '.txt'];
 fp = fopen(file, 'at');
