@@ -22,7 +22,11 @@ rt_dir = strsplit(input_folder, 'input');
 rt_dir = rt_dir{1};
 
 %% read summary.txt -> meta train test
-fp = fopen([input_folder '/summary.txt'], 'r');
+filename = [input_folder '/summary.txt'];
+if ~exist(filename, 'file')
+    error('file does not exist: %s', filename);
+end
+fp = fopen(filename, 'r');
 
 while 1
     tline = fgetl(fp);
@@ -116,7 +120,11 @@ n_parts = numel(all_files);
 assert(n_parts == length(meta.chars));
 
 for i = 1:n_parts
-    fp = fopen([input_folder '/' all_files(i).name], 'r'); % input file
+    filename = [input_folder '/' all_files(i).name];
+    if ~exist(filename, 'file')
+        error('file does not exist: %s', filename);
+    end
+    fp = fopen(filename, 'r'); % input file
     
     while 1
         tline = fgetl(fp);
@@ -134,7 +142,11 @@ for i = 1:n_parts
             tim = arrayfun(@(x) strcmp(x.im, im), train);
             assert(sum(tim) == 1);
 
-            fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+            filename = get_abs_path(rt_dir,anno);
+            if ~exist(filename, 'file')
+                error('file does not exist: %s', filename);
+            end
+            fann = fopen(filename, 'r'); % anno file
 %             fann = fopen(anno, 'r'); % anno file
 
             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
@@ -156,7 +168,11 @@ for i = 1:n_parts
             tim = arrayfun(@(x) strcmp(x.im, im), test);
             assert(sum(tim) == 1);
 
-%             fann = fopen(get_abs_path(rt_dir,anno), 'r'); % anno file
+%             filename = get_abs_path(rt_dir,anno);
+%             if ~exist(filename, 'file')
+%                 error('file does not exist: %s', filename);
+%             end
+%             fann = fopen(filename, 'r'); % anno file
 %             fann = fopen(anno, 'r'); % anno file
 % 
 %             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
