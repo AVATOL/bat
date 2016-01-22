@@ -1,6 +1,6 @@
 % =============
 % Octave/Matlab
-octave = isoctave();
+octave = 0;
 if octave
     disp('Compiling for Octave...');
     gcc = 'mkoctfile --mex';
