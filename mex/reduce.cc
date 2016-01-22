@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include "mex.h"
+#include "reduce.h"
 
 // reduce(im) resizes im to half its size, using a 5-tap binomial filter for anti-aliasing
 // (see Burt & Adelson's Laplacian Pyramid paper)
