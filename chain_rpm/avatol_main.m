@@ -31,8 +31,8 @@ params.overlap    = 0.5;
 params.thresh     = 0;
 params.presence_w = 0;
 % control flags
-params.show_data   = 0;
-params.test_in_train = 1;
+params.show_data   = 0; % 1 = visualize progress, 0 = don't
+params.test_in_train = 0; % 1 = visualize progress, 0 = don't
 params.show_interm = 0;
 
 %% ssvm params 
