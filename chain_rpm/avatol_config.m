@@ -90,7 +90,11 @@ fclose(fp);
 meta.taxon_list = {meta.taxa.name};
 meta.part_list = {meta.chars.name};
 colorset = hsv(length(meta.part_list));
-meta.part_color = mat2cell(colorset, ones(1,length(meta.part_list)), 3);
+if length(meta.part_list) == 1  %jedfix
+    meta.part_color = mat2cell([[1,0,0];[0,1,1]],ones(1,2),3); %jedfix
+else   %jedfix
+    meta.part_color = mat2cell(colorset, ones(1,length(meta.part_list)), 3);
+end  %jedfix
 meta.mask_color = meta.part_color(1:2);
 
 % point [x y] part_mask
@@ -374,6 +378,7 @@ for n = 1:length(trains)
     bb_cand = bb_cand_g;
     if nargin == 5
         pmsk = trains(n).part_mask;
+        pmsk(bb_cand)
         tst = find(pmsk(bb_cand), 1, 'first');
         st = bb_cand(tst);
         bb_cand(tst) = [];
