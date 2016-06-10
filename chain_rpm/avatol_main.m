@@ -13,13 +13,14 @@ params.tsize      = [5 5 32];
 params.maxsize    = [5 5];
 params.cachedir   = fullfile(rootDir, 'cache/');
 params.boxsize    = 48;
-params.bb_cand    = [1 3 4 5];
+params.bb_cand    = [1 3 4 5]; %JED - used only in pointtobox
+                     % JED bb_ratio (bounding box ratio?) used only in pointtobox
 params.bb_ratio   = sparse([0 0 1.0 1.5 3.0; % I1-P1 I1-P4 I1-M3
                             0 0 0   0   0; 
                             0 0 0   1.0 2.5; % P1-P4 P1-M3
                             0 0 0   0   2.5; % P4-M3
                             0 0 0   0   0]);
-params.bb_range   = [35, 80]; % range of sizes of bbox in pixel
+params.bb_range   = [35, 80]; % range of sizes of bbox in pixel - just used in pointtobox
 params.bb_taxa_spec = {'Molossus molossus', 'Mormoops megalophylla', ...
     'Pteropus vampyrus', 'Taphozous melanopogon', 'Hipposideros diadema'};
 params.bb_ratio_spec = [2.4, 3.4, 2.5, 2.2, 3.3]; % need to test st-ed
