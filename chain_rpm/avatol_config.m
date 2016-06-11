@@ -87,8 +87,8 @@ end
 fclose(fp);
 
 % meta common
-meta.taxon_list = {meta.taxa.name};
-meta.part_list = {meta.chars.name};
+meta.taxon_list = {meta.taxa.name}; % JED list of just the names
+meta.part_list = {meta.chars.name}; % JED list of just the characters
 colorset = hsv(length(meta.part_list));
 if length(meta.part_list) == 1  %jedfix
     meta.part_color = mat2cell([[1,0,0];[0,1,1]],ones(1,2),3); %jedfix
@@ -302,7 +302,8 @@ meta.taxa(is_exclu_taxon) = [];
 meta.taxon_list(is_exclu_taxon) = [];
 
 %% bbox
-train_test = pointtobox(train_test, params.boxsize, params.bb_ratio, params.bb_cand, params.bb_range);
+%train_test = pointtobox(train_test, params.boxsize, params.bb_ratio, params.bb_cand, params.bb_range);
+train_test = pointtoboxSimple(train_test, params.bb_range); %JED bypass some bugs related to 5 character assumption
 train = train_test([train_test.setid] == 1);
 test = train_test([train_test.setid] == 2);
 train = rmfield(train, 'setid');
@@ -385,8 +386,29 @@ if is_resiz; im = imresize(im, [default_y default_x]); end;
 point = point .* [w/100 h/100];
 
 
-%JED : looks like pointtobox might be trying to pick a box size based on special stuff Shell knew about the characters.
-% do I jsut change it to be the default size to skip all that?
+
+function trains = pointtoboxSimple(trains, bb_range)
+% 
+
+    bb_sz = 40;
+
+for n = 1:length(trains)
+    points = trains(n).point;
+    boxsize = bb_sz;
+    
+    % control size
+    boxsize = min(max(boxsize,bb_range(1)),bb_range(2));
+
+    for p = 1:size(points,1)
+        if isequal(points(p,:), [0,0])
+            continue
+        end
+        trains(n).x1(p) = points(p,1) - boxsize/2;
+        trains(n).y1(p) = points(p,2) - boxsize/2;
+        trains(n).x2(p) = points(p,1) + boxsize/2;
+        trains(n).y2(p) = points(p,2) + boxsize/2;
+    end
+end
 function trains = pointtobox(trains, bb_sz, bb_ratio, bb_cand_g, bb_range)
 % 
 
@@ -432,7 +454,6 @@ for n = 1:length(trains)
         trains(n).y2(p) = points(p,2) + boxsize/2;
     end
 end
-
 
 function name = name_shrink(name)
 %
