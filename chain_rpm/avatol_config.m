@@ -218,9 +218,10 @@ tind = arrayfun(@(x) any(x.nlabels > 2), test);
 [test(tind).pruned] = deal(1);
 
 %*** black list (incorrect annotations)
-blacklist = {'media\M283606.jpg', 'media\M283568.jpg'};
-tind = arrayfun(@(x) ismember(x.im, blacklist), train);
-[train(tind).pruned] = deal(1);
+% JED - this likely no longer valid blacklist
+% blacklist = {'media\M283606.jpg', 'media\M283568.jpg'};
+% tind = arrayfun(@(x) ismember(x.im, blacklist), train);
+% [train(tind).pruned] = deal(1);
 
 % get abs path
 for n = 1:length(train)
@@ -285,10 +286,11 @@ for i = 1:length(meta.taxa)
     [train_test(tind).taxon] = deal(taxa(i).name);
     
     % special bb_ratio
-    [tism,tloc] = ismember(taxa(i).name, params.bb_taxa_spec);
-    if tism
-        [train_test(tind(rowlocs == trow)).bb_ratio] = deal(params.bb_ratio_spec(tloc));
-    end
+% JED - don't want this special treatment for certain taxa
+%   [tism,tloc] = ismember(taxa(i).name, params.bb_taxa_spec);
+%    if tism
+%        [train_test(tind(rowlocs == trow)).bb_ratio] = deal(params.bb_ratio_spec(tloc));
+%    end
     
     %*** discard samples have diff labels as majority
     % TODO: discarded to test

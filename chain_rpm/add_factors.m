@@ -100,10 +100,63 @@ end
 
 scale = sqrt(width.*height)/sqrt(prod(maxsize));
 scale = [scale; scale];
+% for multi-example case, scale is 
+% 8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000
+% 8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000	8.20000000000000
+
+% for ssingle example case, scale is  
+% 8.20000000000000
+% 8.20000000000000
 
 deffeat = cell(1,size(points,1));
-for p = 1:size(points,1)
+
+for p = 1:size(points,1)    
+    %size(points,1) is the size of points in its first dimension
+    % for multi-example case, its 1x2x9, size is 1
+    % for single-example case, its 1x2, size is 1
+    jedPointCheck = points(p,1:2,:);
+    
+    % for multi-example case, points(p,1:2,:) is
+    % val(:,:,1) = 651.1640  278.6615
+    % val(:,:,2) = 675.3096  276.8658
+    % val(:,:,3) = 664.5088  243.1754
+    % ...
+    % val(:,:,9) = 668.0608  266.8379
+
+    % for single-example case, its 
+    % [441.416000000000,180.031692000000]
     def = squeeze(points(p,1:2,:));
+    [dimx, dimy, dimz] = size(def);
+    % 2, 9, 1 for multi-example case
+    % 1, 2, 1 for single-example case
+    if (dimx == 1 && dimy == 2)
+        def = def';
+    end
+    
+    
+    
+    % for multi-example case, def is 
+    % 651.164000000000	675.309600000000	664.508800000000	639.873600000000	648.949600000000	630.796800000000	654.136000000000	633.390400000000	668.060800000000
+    % 278.661461000000	276.865784000000	243.175387000000	256.133683000000	260.020852000000	272.979148000000	261.316575000000	263.908554000000	266.837922000000
+
+    % for single example case, def is 
+    % 441.416000000000	180.031692000000
     deffeat{p} = (def ./ scale)';
+    
+    % for multip-example case, deffeat {1,1}
+    % 79.4102439024390	33.9831050000000
+    % 82.3548292682927	33.7641200000000
+    % 81.0376585365854	29.6555350000000
+    % 78.0333658536586	31.2358150000000
+    % 79.1401951219512	31.7098600000000
+    % 76.9264390243903	33.2901400000000
+    % 79.7726829268293	31.8678750000000
+    % 77.2427317073171	32.1839700000000
+    % 81.4708292682927	32.5412100000000
+    
+    % for single example case, breaks
+    
+    % with transpose fix, looks good
+    % [53.8312195121951,21.9550843902439]
 end
 
