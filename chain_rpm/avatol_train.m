@@ -84,6 +84,9 @@ for t = 1:num_taxa
     if taxa(t).split == 0
         continue;
     end
+    if taxa(t).num_parts == 0
+        continue;
+    end
     
     cls = [name '_DPM_taxon_' taxon_list{t}];
     fprintf('(taxon %d): DPM training %s...\n', t, cls);

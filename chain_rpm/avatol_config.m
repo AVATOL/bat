@@ -297,6 +297,14 @@ for i = 1:length(meta.taxa)
     [train_test(tind(rowlocs ~= trow)).pruned] = deal(1);
 end
 
+%index = 1;
+%for i = 1:length(taxa)
+%    if taxa(i).num_parts ~= 0
+%        taxa_new(index) = taxa(i);
+%        index = index + 1;
+%    end    
+%end
+%taxa = taxa_new;
 % exclude taxa has inconsistent labels
 is_exclu_taxon = logical(is_exclu_taxon);
 % taxa(is_exclu_taxon) = [];
