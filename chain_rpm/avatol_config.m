@@ -103,16 +103,20 @@ meta.mask_color = meta.part_color(1:2);
 % next sections make zero-initialized data structure to hold everything
 % point [x y] part_mask
 for n = 1:length(train)
-    train(n).point = zeros(length(meta.chars),2); 
+    train(n).point = zeros(length(meta.chars),2);
     train(n).part_mask = zeros(1,length(meta.chars));
     train(n).nlabels = zeros(length(meta.chars),1); 
     train(n).bb_ratio = 0;
     train(n).sid = cell(length(meta.chars),1);  %one for each character in play
     train(n).tid = -1; % will be overwritten
 end
-
+[rectangle] = deal([]);
+for n = 1:length(train)
+    rectangle(n).point1 = zeros(length(meta.chars),2); %RECTANGLE SUPPORT
+    rectangle(n).point2 = zeros(length(meta.chars),2); %RECTANGLE SUPPORT
+end
 for n = 1:length(test)
-    test(n).point = zeros(length(meta.chars),2); 
+    test(n).point = zeros(length(meta.chars),2);
     test(n).part_mask = zeros(1,length(meta.chars));
     test(n).nlabels = zeros(length(meta.chars),1); 
     test(n).bb_ratio = 0;
@@ -159,8 +163,50 @@ for i = 1:n_parts
 
             tann = fgetl(fann); % NOTE: assume only one side: use line 1 not 2 in input file
             sann = strsplit(tann, ':');
-            sxy = strsplit(sann{1}, ','); %JED: isolating the x and y coords from the input line
-            train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
+            %RECT% 
+            points_string = sann{1};
+            %deduce that its a rectangle (with two points) if there are any ; delims there.  
+            %...Note that if polygon comes in , this will just look at the
+            %first two points as defining a rectangle, which of course, is
+            %an error
+            array_of_rectangle_pairs = findstr(points_string, ';'); 
+            if isempty(array_of_rectangle_pairs)
+                sxy = strsplit(points_string, ',');%JED: isolating the x and y coords from the input line
+                train(tim).point(i,:) = ratio2coord(sxy, get_abs_path(rt_dir,train(tim).im));
+            else  %RECTANGLE SUPPORT
+                rectangle_pairs = strsplit(points_string, ';');
+                sxy1 = strsplit(rectangle_pairs{1}, ',');
+                sxy2 = strsplit(rectangle_pairs{2}, ',');
+                p1_orig = ratio2coord(sxy1, get_abs_path(rt_dir,train(tim).im));
+                p2_orig = ratio2coord(sxy2, get_abs_path(rt_dir,train(tim).im));
+                % make it a square fitting around the rectangle
+                rect_width = p2_orig(1) - p1_orig(1);
+                rect_height = p2_orig(2) - p1_orig(2);
+                p1_new = [0,0];
+                p2_new = [0,0];
+                x_center = p1_orig(1) + rect_width / 2;
+                y_center = p1_orig(2) + rect_height / 2;
+                square_side_length = 0;
+                if (rect_width > rect_height)
+                    % make the height the same as width
+                    square_side_length = int64(rect_width);
+                else 
+                    % make the width the same as the height
+                    square_side_length = int64(rect_height);
+                end
+                square_side_length = min(max(square_side_length,params.bb_range(1)),params.bb_range(2));
+                p1_new(1) = x_center - square_side_length / 2;
+                p1_new(2) = y_center - square_side_length / 2;
+                p2_new(1) = x_center + square_side_length / 2;
+                p2_new(2) = y_center + square_side_length / 2;
+                rectangle(tim).point1(i,:) = p1_new;
+                rectangle(tim).point2(i,:) = p2_new;
+                center_point = get_center_point(sxy1, sxy2); %fabricate center point from rect in case its used somewhere
+                train(tim).point(i,:) = ratio2coord(center_point, get_abs_path(rt_dir,train(tim).im));
+            end
+            
+            
+            
 %             train(tim).point(i,:) = ratio2coord(sxy, train(tim).im);
             train(tim).sid{i} = sid; 
             train(tim).tid = tid;
@@ -313,7 +359,7 @@ meta.taxon_list(is_exclu_taxon) = [];
 
 %% bbox
 %train_test = pointtobox(train_test, params.boxsize, params.bb_ratio, params.bb_cand, params.bb_range);
-train_test = pointtoboxSimple(train_test, params.bb_range); %JED bypass some bugs related to 5 character assumption
+train_test = pointtoboxSimple(train_test, params.bb_range, rectangle); %JED bypass some bugs related to 5 character assumption
 train = train_test([train_test.setid] == 1);
 test = train_test([train_test.setid] == 2);
 train = rmfield(train, 'setid');
@@ -373,6 +419,14 @@ anno = str{4};
 tid = str{3};
 labelid = str{5};
 
+function point = get_center_point(xy1, xy2)
+x1 = str2double(xy1{1});
+y1 = str2double(xy1{2});
+x2 = str2double(xy2{1});
+y2 = str2double(xy2{2});
+xmid = cellstr(num2str(x1 + ((x2 - x1) / 2)));
+ymid = cellstr(num2str(y1 + ((y2 - y1) / 2)));
+point = [ xmid, ymid ];
 
 function abspath = get_abs_path(rt_dir, path)
 % abspath = [rt_dir path];
@@ -397,11 +451,10 @@ point = point .* [w/100 h/100];
 
 
 
-function trains = pointtoboxSimple(trains, bb_range)
+function trains = pointtoboxSimple(trains, bb_range, rectangle)
 % 
-
     bb_sz = 40;
-
+    
 for n = 1:length(trains)
     points = trains(n).point;
     boxsize = bb_sz;
@@ -413,10 +466,21 @@ for n = 1:length(trains)
         if isequal(points(p,:), [0,0])
             continue
         end
-        trains(n).x1(p) = points(p,1) - boxsize/2;
-        trains(n).y1(p) = points(p,2) - boxsize/2;
-        trains(n).x2(p) = points(p,1) + boxsize/2;
-        trains(n).y2(p) = points(p,2) + boxsize/2;
+        if (rectangle(n).point1(p) ~= 0)
+            trains(n).x1(p) = rectangle(n).point1(p,1);
+            trains(n).y1(p) = rectangle(n).point1(p,2);
+        else
+            trains(n).x1(p) = points(p,1) - boxsize/2;
+            trains(n).y1(p) = points(p,2) - boxsize/2;
+        end
+        if (rectangle(n).point2(p) ~= 0)
+            trains(n).x2(p) = rectangle(n).point2(p,1);
+            trains(n).y2(p) = rectangle(n).point2(p,2);
+        else
+            trains(n).x2(p) = points(p,1) + boxsize/2;
+            trains(n).y2(p) = points(p,2) + boxsize/2;
+        end
+        
     end
 end
 function trains = pointtobox(trains, bb_sz, bb_ratio, bb_cand_g, bb_range)
